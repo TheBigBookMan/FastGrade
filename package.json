@@ -1,0 +1,30 @@
+{
+  "name": "fastgrade",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    	"test": "echo \"Error: no test specified\" && exit 1",
+    	"dev:webapp": "npm --prefix webapp run dev",
+	"dev:extension": "npm --prefix extension run dev",
+	"dev:api": "npm --prefix api run dev",
+	"dev:webapp-api": "concurrently \"npm run dev:webapp\" \"npm run dev:api\"",
+	"dev:extension-api": "concurrently \"npm run dev:extension\" \"npm run dev:api\"",
+	"dev:all": "concurrently \"npm run dev:webapp\" \"npm run dev:extension\" \"npm run dev:api\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheBigBookMan/FastGrade.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TheBigBookMan/FastGrade/issues"
+  },
+  "homepage": "https://github.com/TheBigBookMan/FastGrade#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
