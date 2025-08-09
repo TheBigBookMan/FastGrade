@@ -24,7 +24,7 @@ class CommentController {
         try {
 
             const { userId } = req.params;
-            const { body, categoryId, keywords } = req.body;
+            const { body, categoryId, keywords, title } = req.body;
 
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!body) return returnError.loggerWarnBody(res);
@@ -33,7 +33,7 @@ class CommentController {
                 userId,
                 body,
                 categoryId,
-                keywords
+                keywords, title
             });
 
             return res.status(201).json(newComment);
