@@ -1,5 +1,6 @@
 import logger from "../utils/logger.js";
 import commentService from '../services/commentService.js';
+import returnError from "../utils/returnError.js";
 
 class CommentController {
     async fetchCommentsByUserId (req, res) {
@@ -7,10 +8,7 @@ class CommentController {
 
             const { userId } = req.params;
 
-            if(!userId) {
-                logger.warn('Missing userId in request params');
-                return res.status(400).json({ error: 'User ID is required' });
-            }
+            if(!userId) return returnError.loggerWarnUserId(res);
 
             const comments = await commentService.getCommentsByUserId(userId);
 
@@ -18,7 +16,31 @@ class CommentController {
 
         } catch (err) {
             logger.error({ msg: 'Error fetching commens by userId', err });
-            return res.status(500).json({ error: 'Internal Server Error' });
+            return returnError.internalError(res);
+        }
+    }
+
+    async postComment (req, res) {
+        try {
+
+            const { userId } = req.params;
+            const { body, categoryId, keywords } = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!body) return returnError.loggerWarnBody(res);
+
+            const newComment = await commentService.createComment({
+                userId,
+                body,
+                categoryId,
+                keywords
+            });
+
+            return res.status(201).json(newComment);
+
+        } catch(err) {
+            logger.error({ msg: 'Error creating comment', err });
+            return returnError.internalError(res);
         }
     }
 }
