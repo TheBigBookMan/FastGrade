@@ -15,7 +15,7 @@ class CommentController {
             return res.json(comments);
 
         } catch (err) {
-            logger.error({ msg: 'Error fetching commens by userId', err });
+            logger.error({ msg: 'Error fetching comments by userId', err });
             return returnError.internalError(res);
         }
     }
