@@ -8,6 +8,17 @@ class RubricService {
             
         });
     }
+
+    async createRubric (userId, name, description, imageURL) {
+        return prisma.rubric.create({
+            data: {
+                userId,
+                name,
+                description,
+                imageURL
+            }
+        });
+    }
 }
 
 export default new RubricService();
