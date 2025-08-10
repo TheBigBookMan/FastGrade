@@ -10,6 +10,16 @@ class CategoryService {
             }
         });
     }
+
+    async createCategory (userId, name, description) {
+        return prisma.category.create({
+            data: {
+                userId,
+                name,
+                description
+            }
+        });
+    }
 }
 
 export default new CategoryService();
