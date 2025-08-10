@@ -6,9 +6,9 @@ class ReturnError {
         return res.status(400).json({ error: 'User ID is required' });
     };
 
-    loggerWarnBody = (res) => {
-        logger.warn('Missing comment body in request');
-        return res.status(400).json({ error: 'Comment body is required' });
+    loggerWarnRequiredAttribute = (res, entity, attribute) => {
+        logger.warn(`Missing ${entity} ${attribute} in request`);
+        return res.status(400).json({ error: `${entity} ${attribute} is required` });
     };
 
     internalError = (res) => {
