@@ -5,7 +5,7 @@ import categoryRouter from './category.js';
 // import userRouter from './user.js';
 // import adminRouter from './admin.js';
 // import feedbackRouter from './feedback.js';
-// import rubricRouter from './rubric.js';
+import rubricRouter from './rubric.js';
 
 const router = Router();
 
@@ -14,6 +14,6 @@ router.use('/category', categoryRouter);
 // router.use('/user', userRouter);
 // router.use('/admin', adminRouter);
 // router.use('/feedback', feedbackRouter);
-// router.use('/rubric', rubricRouter);
+router.use('/rubric', rubricRouter);
 
 export default router;
