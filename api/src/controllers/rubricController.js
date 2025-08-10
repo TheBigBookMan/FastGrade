@@ -19,6 +19,30 @@ class RubricController {
             return returnError.internalError(res);
         }
     }
+
+    async postRubric(req, res) {
+        try {
+
+            const {userId} = req.params;
+            const {name, description, imageURL} = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!name) return returnError.loggerWarnRequiredAttribute(res, 'rubric', 'name');
+
+            const newRubric = await rubricService.createRubric({
+                userId, 
+                name,
+                description,
+                imageURL
+            });
+
+            return res.status(201).json(newRubric);
+            
+        } catch(err) {
+            logger.error({ msg: 'Error creating rubric', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new RubricController();
