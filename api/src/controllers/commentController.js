@@ -27,7 +27,7 @@ class CommentController {
             const { body, categoryId, keywords, title } = req.body;
 
             if(!userId) return returnError.loggerWarnUserId(res);
-            if(!body) return returnError.loggerWarnBody(res);
+            if(!body) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'body');
 
             const newComment = await commentService.createComment({
                 userId,

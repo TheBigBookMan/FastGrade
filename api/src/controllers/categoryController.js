@@ -19,6 +19,29 @@ class CategoryController {
             return returnError.internalError(res);
         }
     }
+
+    async postCategory (req, res) {
+        try {
+
+            const {userId} = req.params;
+            const {name, description} = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!name) return returnError.loggerWarnRequiredAttribute(res, 'category', 'name');
+
+            const newCategory = await categoryService.createCategory({
+                userId,
+                name,
+                description
+            });
+
+            return res.status(201).json(newCategory);
+
+        } catch(err) {
+            logger.error({ msg: 'Error creating category', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new CategoryController();
