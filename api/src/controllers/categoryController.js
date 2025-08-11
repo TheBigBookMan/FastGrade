@@ -42,6 +42,23 @@ class CategoryController {
             return returnError.internalError(res);
         }
     }
+
+    async fetchCategoryByUserId (req, res) {
+        try {
+
+            const {userId, categoryId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', 'categoryId');
+
+            const categories = await categoryService.getCategoryByUserId(userId, categoryId);
+
+            return res.json(categories);
+        } catch(err) {
+            logger.error({ msg: 'Error fetching categories', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new CategoryController();
