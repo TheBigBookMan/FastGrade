@@ -19,6 +19,12 @@ class RubricService {
             }
         });
     }
+
+    async getRubricByUserId (userId, rubricId) {
+        return prisma.rubric.findUnique({
+            where: {userId, rubricId}
+        });
+    }
 }
 
 export default new RubricService();
