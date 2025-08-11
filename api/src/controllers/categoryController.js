@@ -51,11 +51,11 @@ class CategoryController {
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', 'categoryId');
 
-            const categories = await categoryService.getCategoryByUserId(userId, categoryId);
+            const category = await categoryService.getCategoryByUserId(userId, categoryId);
 
-            return res.json(categories);
+            return res.json(category);
         } catch(err) {
-            logger.error({ msg: 'Error fetching categories', err });
+            logger.error({ msg: 'Error fetching category', err });
             return returnError.internalError(res);
         }
     }
