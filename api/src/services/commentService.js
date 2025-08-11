@@ -22,6 +22,12 @@ class CommentService {
             }
         });
     }
+
+    async getCommentByUserId (userId, commentId) {
+        return prisma.comment.findUnique({
+            where: {userId, commentId}
+        });
+    }
 }
 
 export default new CommentService();
