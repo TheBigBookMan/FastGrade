@@ -43,6 +43,24 @@ class RubricController {
             return returnError.internalError(res);
         }
     }
+
+    async fetchRubricByUserId (req, res) {
+        try {
+
+            const {userId, rubricId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!rubricId) return returnError.loggerWarnRequiredAttribute(res, 'rubric', 'rubricId');
+
+            const rubric = await rubricService.getRubricByUserId(userId, rubricId);
+
+            return res.json(rubric);
+            
+        } catch(err) {
+            logger.error({ msg: 'Error fetching rubric', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new RubricController();
