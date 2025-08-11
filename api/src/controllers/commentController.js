@@ -43,6 +43,23 @@ class CommentController {
             return returnError.internalError(res);
         }
     }
+
+    async fetchCommentByUserId (req, res) {
+        try {
+
+            const {userId, commentId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
+
+            const comment = await commentService.getCommentByUserId(userId, commentId);
+
+            return res.json(comment);
+        } catch(err) {
+            logger.error({ msg: 'Error fetching comments', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new CommentController();
