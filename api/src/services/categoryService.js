@@ -20,6 +20,12 @@ class CategoryService {
             }
         });
     }
+
+    async getCategoryByUserId (userId, categoryId) {
+        return prisma.category.findUnique({
+            where: {userId, categoryId}
+        });
+    }
 }
 
 export default new CategoryService();
