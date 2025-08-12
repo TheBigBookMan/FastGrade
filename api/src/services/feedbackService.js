@@ -14,6 +14,12 @@ class FeedbackService {
             }
         });
     }
+
+    async fetchFeedbackByUser(feedbackId, userId) {
+        return prisma.feedback.findMany({
+            where: {feedbackId, userId}
+        });
+    }
 }
 
 export default new FeedbackService();
