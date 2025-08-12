@@ -5,5 +5,6 @@ const router = Router();
 
 router.get('/', feedbackController.fetchAllFeedback);
 router.post('/', feedbackController.createFeedback);
+router.get('/:feedbackId/user/:userId', feedbackController.fetchFeedbackByUser);
 
 export default router;
