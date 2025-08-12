@@ -34,6 +34,24 @@ class FeedbackController {
             return returnError.internalError(res);
         }
     }
+
+    async fetchFeedbackByUser(req, res) {
+        try {
+
+            const {feedbackId, userId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!feedbackId) return returnError.loggerWarnRequiredAttribute(res, 'feedback', 'feedbackId');
+
+            const feedback = await feedbackService.fetchFeedbackByUser(feedbackId, userId);
+
+            return res.json(feedback);
+
+        } catch(err) {
+            logger.error({ msg: 'Error fetching feedback', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new FeedbackController();
