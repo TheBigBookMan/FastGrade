@@ -21,6 +21,8 @@ model User {
     Tag Tag[]
 
     CommentTag CommentTag[]
+
+    HotkeyMapping HotkeyMapping[]
 }
 
 model Comment {
@@ -41,6 +43,7 @@ model Comment {
     @@index([userId])
     @@index([categoryId])
     CommentTag CommentTag[]
+    HotkeyMapping HotkeyMapping[]
 }
 
 model Tag {
@@ -99,6 +102,21 @@ model Rubric {
     @@index([userId])
 }
 
+model HotkeyMapping {
+    id        String  @id @default(cuid())
+    userId    String  @map("user_id")
+    commentId String  @map("comment_id")
+    hotkey    String
+    isActive  Boolean @default(true) @map("is_active")
+
+    // Relations
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, hotkey])
+    @@map("hotkey_mappings")
+}
+
 model Feedback {
     id String @id @default(cuid())
     title String
@@ -107,3 +125,33 @@ model Feedback {
     userId String
     createdAt DateTime @default(now())
 }
+
+// TODO
+// This commented out Rubric Criteria would be a later feature where rubric criteria could work as a link for comments to help with assisting in comment related to a specific marking criteria of the rubric
+// model RubricCriteria {
+//   id          String @id @default(cuid())
+//   rubricId    String @map("rubric_id")
+//   name        String
+//   description String?
+//   maxPoints   Int?   @map("max_points")
+//   sortOrder   Int    @default(0) @map("sort_order")
+
+//   // Relations
+//   rubric                  Rubric                   @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+//   commentRubricCriteria   CommentRubricCriteria[]
+
+//   @@map("rubric_criteria")
+// }
+
+// model CommentRubricCriteria {
+//   commentId         String @map("comment_id")
+//   rubricCriteriaId  String @map("rubric_criteria_id")
+
+//   // Relations
+//   comment         Comment         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+//   rubricCriteria  RubricCriteria  @relation(fields: [rubricCriteriaId], references: [id], onDelete: Cascade)
+
+//   @@id([commentId, rubricCriteriaId])
+//   @@map("comment_rubric_criteria")
+// }
+
