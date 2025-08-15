@@ -6,6 +6,15 @@ class TagService {
             where: {userId}
         });
     } 
+
+    async fetchTagByUserId(userId, tagId) {
+        return prisma.tag.findUnique({
+            where: {
+                userId,
+                tagId
+            }
+        });
+    }
 }
 
 export default new TagService();
