@@ -18,6 +18,24 @@ class TagController {
             return returnError.internalError(res);
         }
     }
+
+    async fetchTagByUserId(req, res) {
+        try {
+
+            const {userId, tagId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!tagId) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'tagId');
+
+            const tag = await tagService.fetchTagByUserId(userId, tagId);
+
+            return res.json(tag);
+
+        } catch(err) {
+            logger.error({ msg: 'Error fetching tag by userId', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new TagController();
