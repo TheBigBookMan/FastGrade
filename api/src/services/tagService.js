@@ -15,6 +15,16 @@ class TagService {
             }
         });
     }
+
+    async createTag(userId, commentId, name) {
+        return prisma.tag.create({
+            data: {
+                userId, 
+                commentId,
+                name
+            }
+        });
+    }
 }
 
 export default new TagService();
