@@ -23,8 +23,7 @@ class CommentController {
     async postComment (req, res) {
         try {
 
-            const { userId } = req.params;
-            const { body, categoryId, keywords, title } = req.body;
+            const { userId, body, categoryId, keywords, title } = req.body;
 
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!body) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'body');
