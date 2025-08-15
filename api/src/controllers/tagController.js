@@ -36,6 +36,25 @@ class TagController {
             return returnError.internalError(res);
         }
     }
+
+    async createTag(req, res) {
+        try {
+
+            const {userId, commentId, name } = req.body;
+
+            if(!userId) return returnError.internalError(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'commentId');
+            if(!name) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'name');
+
+            const newTag = await tagService.createTag(userId, commentId, name);
+
+            return res.status(201).json(newTag);
+
+        } catch(err) {
+            logger.error({ msg: 'Error creating tag.', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new TagController();
