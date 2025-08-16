@@ -36,6 +36,7 @@ model Comment {
     category Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     categoryId String
     isFavourite Boolean @default(false)
+    order Int @default(0)
     useCount Int @default(0)
     lastUsedAt DateTime?
     keywords Json?
