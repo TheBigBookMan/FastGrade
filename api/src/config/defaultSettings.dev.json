@@ -1,0 +1,9 @@
+{
+    "theme": "light",
+    "language": "en",
+    "notifications": true,
+    "autoSave": true,
+    "sidebarCollapsed": false,
+    "fontSize": "medium",
+    "timezone": "ACST"
+}
