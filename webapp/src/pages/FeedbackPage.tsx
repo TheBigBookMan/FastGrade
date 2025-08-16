@@ -1,7 +1,9 @@
+import Header from "../components/common/layout/header/Header";
+
 const FeedbackPage = () => {
     return (
-        <div>
-            <h1>Feedback</h1>
+        <div className="min-h-screen bg-secondary-50">
+            <Header />
         </div>
     )
 }

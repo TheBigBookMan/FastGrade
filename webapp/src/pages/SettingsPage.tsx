@@ -1,7 +1,9 @@
+import Header from "../components/common/layout/header/Header";
+
 const SettingsPage = () => {
     return (
-        <div>
-            <h1>Settings</h1>
+        <div className="min-h-screen bg-secondary-50">
+            <Header />
         </div>
     )
 }
