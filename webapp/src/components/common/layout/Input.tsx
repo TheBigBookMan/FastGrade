@@ -9,7 +9,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     fullWidth?: boolean;
 }
 
-const Input = ({ 
+export const Input = ({ 
     label, 
     error, 
     leftIcon, 
@@ -47,7 +47,7 @@ const Input = ({
             <div className="relative">
                 {leftIcon && (
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <div className="h-5 w-5 text-secondary-400">
+                        <div className="text-secondary-400">
                             {leftIcon}
                         </div>
                     </div>
@@ -67,7 +67,7 @@ const Input = ({
                         className="absolute inset-y-0 right-0 pr-3 flex items-center"
                         onClick={onRightIconClick}
                     >
-                        <div className="h-5 w-5 text-secondary-400 hover:text-secondary-600">
+                        <div className="text-secondary-400 hover:text-secondary-600 transition-colors">
                             {rightIcon}
                         </div>
                     </button>
