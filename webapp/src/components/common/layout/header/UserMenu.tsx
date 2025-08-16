@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import Button from '../../Button';
-import { MdLogout, MdPerson, MdSettings, MdKeyboardArrowDown } from 'react-icons/md';
+import { MdLogout, MdPerson, MdSettings, MdKeyboardArrowDown, MdFeedback } from 'react-icons/md';
 
 const UserMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,11 @@ const UserMenu = () => {
 
     const handleSettings = () => {
         navigate('/settings');
+        setIsOpen(false);
+    };
+
+    const handleFeedback = () => {
+        navigate('/feedback');
         setIsOpen(false);
     };
 
@@ -57,6 +62,14 @@ const UserMenu = () => {
                         >
                             <MdSettings className="w-4 h-4 mr-2" />
                             Settings
+                        </button>
+
+                        <button
+                            onClick={handleFeedback}
+                            className="w-full flex items-center px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 transition-colors"
+                        >
+                            <MdFeedback className="w-4 h-4 mr-2" />
+                            Feedback
                         </button>
                         
                         <button
