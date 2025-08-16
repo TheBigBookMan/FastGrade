@@ -59,6 +59,24 @@ class CategoryController {
             return returnError.internalError(res);
         }
     }
+
+    async updateCategoryByUserId (req, res) {
+        try {
+            const { userId, categoryId } = req.params;
+            const { name, description, order } = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', 'categoryId');
+
+            const updatedCategory = await categoryService.updateCategoryByUserId(userId, categoryId, { name, description, order });
+
+            return res.json(updatedCategory);
+        }
+        catch (err) {
+            logger.error({ msg: 'Error updating category', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new CategoryController();
