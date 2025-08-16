@@ -33,6 +33,18 @@ class SettingsService {
 
         return updatedSettings;
     }
+
+    async setDefaultSettings(userId) {
+        const updatedSettings = await prisma.settings.update({
+            where: { userId },
+            data: { 
+                settings: defaultSettings,
+                updatedAt: new Date()
+            }
+        });
+
+        return updatedSettings;
+    }
 }
 
 export default new SettingsService();
