@@ -6,5 +6,6 @@ const router = Router();
 router.get('/:userId', settingsController.fetchSettingsByUserId);
 router.post('/', settingsController.postSettings);
 router.put('/:userId', settingsController.putSettings);
+router.get('/:userId/default', settingsController.setDefaultSettings);
 
 export default router;
