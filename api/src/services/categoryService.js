@@ -26,6 +26,17 @@ class CategoryService {
             where: {userId, categoryId}
         });
     }
+
+    async updateCategoryByUserId (userId, categoryId, { name, description, order }) {
+        return prisma.category.update({
+            where: {categoryId, userId},
+            data: { name, 
+                description, 
+                order, 
+                updatedAt: new Date() 
+            }
+        });
+    }
 }
 
 export default new CategoryService();
