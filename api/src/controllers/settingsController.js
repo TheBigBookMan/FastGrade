@@ -33,6 +33,24 @@ class SettingsController {
             return returnError.internalError(res);
         }
     }
+
+    async putSettings(req, res) {
+        try {
+            const { userId } = req.params;
+            const newSettings = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!newSettings || typeof newSettings !== 'object') return returnError.loggerWarnRequiredAttribute(res, 'settings', 'newSettings');
+
+            const updatedSettings = await settingsService.updateSettings(userId, newSettings);
+
+            return res.json(updatedSettings);
+        }
+        catch (err) {
+            logger.error({ msg: 'Error putting settings', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new SettingsController();
