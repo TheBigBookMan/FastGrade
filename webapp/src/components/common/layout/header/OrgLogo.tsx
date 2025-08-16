@@ -1,14 +1,17 @@
+import { NavLink } from "react-router-dom";
+
 interface OrgLogoProps {
     className?: string;
 }
 
 const OrgLogo = ({ className = "" }: OrgLogoProps) => {
+    const orgName = "FastGrade";
     return (
-        <div className={`flex items-center ${className}`}>
+        <NavLink to="/" className={`flex items-center ${className}`}>
             <h1 className="text-2xl font-bold text-primary-600">
                 FastGrade
             </h1>
-        </div>
+        </NavLink>
     );
 };
 
