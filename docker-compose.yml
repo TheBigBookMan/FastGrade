@@ -3,11 +3,11 @@ version: "3.9"
 services:
   mysql:
     image: mysql:8
-    container_name: gradefast-mysql
+    container_name: fastgrade-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: gradefast
+      MYSQL_DATABASE: fastgrade
     ports:
       - "3307:3306"
     volumes:
@@ -15,13 +15,13 @@ services:
 
   api:
     build: ./api
-    container_name: gradefast-api
+    container_name: fastgrade-api
     ports:
       - "5001:5000"
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://root:root@mysql:3306/gradefast
+      DATABASE_URL: mysql://root:root@mysql:3306/fastgrade
       NODE_ENV: development
     volumes:
       - ./api:/app                  # live-edit your code
@@ -32,7 +32,7 @@ services:
 
   webapp:
     build: ./webapp
-    container_name: gradefast-webapp
+    container_name: fastgrade-webapp
     ports:
       - "5174:5173"                 # host:container
     depends_on:
