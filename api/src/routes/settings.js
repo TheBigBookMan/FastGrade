@@ -5,5 +5,6 @@ const router = Router();
 
 router.get('/:userId', settingsController.fetchSettingsByUserId);
 router.post('/', settingsController.postSettings);
+router.put('/:userId', settingsController.putSettings);
 
 export default router;
