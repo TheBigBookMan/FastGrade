@@ -5,7 +5,6 @@ const navigationItems = [
     { name: 'Comments', path: '/comments' },
     { name: 'Categories', path: '/categories' },
     { name: 'Rubrics', path: '/rubrics' },
-    { name: 'Feedback', path: '/feedback' },
 ];
 
 export const Navigation = () => {
