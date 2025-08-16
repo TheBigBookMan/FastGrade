@@ -132,6 +132,8 @@ model Settings {
     settings  Json
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@index([userId])
 }
 
 // TODO
