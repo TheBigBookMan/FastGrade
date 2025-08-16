@@ -8,18 +8,18 @@ const navigationItems = [
     { name: 'Feedback', path: '/feedback' },
 ];
 
-const Navigation = () => {
+export const Navigation = () => {
     return (
-        <nav className="hidden md:flex space-x-8">
+        <nav className="hidden md:flex bg-secondary-100 rounded-lg p-1">
             {navigationItems.map((item) => (
                 <NavLink
                     key={item.name}
                     to={item.path}
                     className={({ isActive }) =>
-                        `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        `relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                             isActive
-                                ? 'text-primary-600 bg-primary-50 border-b-2 border-primary-600'
-                                : 'text-secondary-600 hover:text-primary-600 hover:bg-primary-50'
+                                ? 'text-primary-600 bg-white shadow-sm ring-1 ring-primary-200'
+                                : 'text-secondary-600 hover:text-primary-600 hover:bg-white/50'
                         }`
                     }
                 >
