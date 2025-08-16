@@ -2,9 +2,11 @@ import prisma from '../utils/prisma.js';
 
 class SettingsService {
     async getSettingsByUserId(userId) {
-        return prisma.settings.findUnique({
+        const settings = await prisma.settings.findUnique({
             where: { userId }
         });
+
+        return settings?.settings || {};
     }
 }
 
