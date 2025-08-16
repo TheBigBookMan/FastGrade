@@ -18,6 +18,21 @@ class SettingsService {
 
         return newSettings;
     }
+
+    async updateSettings(userId, newSettings) {
+        const currentSettings = await this.getSettingsByUserId(userId);
+        const mergedSettings = { ...currentSettings, ...newSettings };
+
+        const updatedSettings = await prisma.settings.update({
+            where: { userId },
+            data: { 
+                settings: mergedSettings,
+                updatedAt: new Date()
+            }
+        });
+
+        return updatedSettings;
+    }
 }
 
 export default new SettingsService();
