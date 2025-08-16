@@ -51,6 +51,22 @@ class SettingsController {
             return returnError.internalError(res);
         }
     }
+
+    async setDefaultSettings(req, res) {
+        try {
+            const { userId } = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+
+            const defaultSettings = await settingsService.setDefaultSettings(userId);
+
+            return res.json(defaultSettings);
+        }
+        catch (err) {
+            logger.error({ msg: 'Error setting default settings', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new SettingsController();
