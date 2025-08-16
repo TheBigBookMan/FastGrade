@@ -17,6 +17,22 @@ class SettingsController {
             return returnError.internalError(res);
         }
     }
+
+    async postSettings(req, res) {
+        try {
+            const { userId } = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+
+            const newSettings = await settingsService.createSettings(userId);
+
+            return res.status(201).json(newSettings);
+        }
+        catch (err) {
+            logger.error({ msg: 'Error posting settings', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new SettingsController();
