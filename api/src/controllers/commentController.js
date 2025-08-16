@@ -59,6 +59,23 @@ class CommentController {
             return returnError.internalError(res);
         }
     }
+
+    async updateCommentByUserId (req, res) {
+        try {
+            const { userId, commentId } = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
+
+            const updatedComment = await commentService.updateCommentByUserId(userId, commentId, req.body);
+
+            return res.json(updatedComment);
+        }
+        catch (err) {
+            logger.error({ msg: 'Error updating comment', err });
+            return returnError.internalError(res);
+        }
+    }
 }
 
 export default new CommentController();
