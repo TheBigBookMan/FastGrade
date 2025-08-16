@@ -25,7 +25,17 @@ class CommentService {
 
     async getCommentByUserId (userId, commentId) {
         return prisma.comment.findUnique({
-            where: {userId, commentId}
+            where: {commentId, userId}
+        });
+    }
+
+    async updateCommentByUserId (userId, commentId, updatedComment) {
+        return prisma.comment.update({
+            where: {commentId, userId},
+            data: { 
+                ...updatedComment, 
+                updatedAt: new Date() 
+            }
         });
     }
 }
