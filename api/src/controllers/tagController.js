@@ -48,6 +48,9 @@ class TagController {
 
             const newTag = await tagService.createTag(userId, commentId, name);
 
+            // TODO
+            // This will also need to create a CommentTag row
+
             return res.status(201).json(newTag);
 
         } catch(err) {
