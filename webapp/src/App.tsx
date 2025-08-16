@@ -7,6 +7,7 @@ import CommentsPage from './pages/CommentsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import RubricsPage from './pages/RubricsPage';
 import FeedbackPage from './pages/FeedbackPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
 					<Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
 					<Route path="/rubrics" element={<ProtectedRoute><RubricsPage /></ProtectedRoute>} />
 					<Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
+					<Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
 					<Route path='/' element={<Navigate to='/dashboard' replace />} />
 				</Routes>
