@@ -20,6 +20,18 @@ class ReturnSuccess {
             timestamp: new Date().toISOString()
         });
     }
+
+    successUpdate(res, message, data = null) {
+        const response = {
+            success: true,
+            message,
+            timestamp: new Date().toISOString()
+        };
+
+        if (data !== null && data !== undefined) response.data = data;
+
+        return res.status(200).json(response);
+    }
 }
 
 export default new ReturnSuccess();
