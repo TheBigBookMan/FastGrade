@@ -19,28 +19,31 @@ const FeedbackForm = () => {
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-        if (!formData.title || !formData.description || !user?.id) {
+
+        if(!user?.id) return;
+
+        if (!formData.title || !formData.description) {
             toast.error('Please fill in all fields');
             return;
         }
-            try{
 
-                const response = await mutateAsync({
-                    ...formData,
-                    userId: user.id
-                });
-                
-                if(response.success) {
-                    setFormData({ title: '', description: '', userId: user.id });
-                    toast.success(response.message || 'Feedback submitted successfully');
-                } else {
-                    toast.error(response.message || 'Failed to submit feedback');
-                }
-            } catch(err: any) {
-                console.error('Network/Technical error:', err);
-                toast.error(err.message || 'Failed to submit feedback');
-            } 
-        
+        try{
+
+            const response = await mutateAsync({
+                ...formData,
+                userId: user.id
+            });
+            
+            if(response.success) {
+                setFormData({ title: '', description: '', userId: user.id });
+                toast.success(response.message || 'Feedback submitted successfully');
+            } else {
+                toast.error(response.message || 'Failed to submit feedback');
+            }
+        } catch(err: any) {
+            console.error('Network/Technical error:', err);
+            toast.error(err.message || 'Failed to submit feedback');
+        } 
     };
 
     return (
