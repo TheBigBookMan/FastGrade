@@ -43,7 +43,7 @@ class FeedbackController {
 
             const feedback = await feedbackService.fetchFeedbackByUser(feedbackId, userId);
 
-            return res.json(feedback);
+            return returnSuccess.successFetch(res, feedback, 'feedback');
 
         } catch(err) {
             return returnError.internalError(res, 'Error fetching feedback', err);

@@ -16,8 +16,8 @@ class FeedbackService {
     }
 
     async fetchFeedbackByUser(feedbackId, userId) {
-        return prisma.feedback.findMany({
-            where: {feedbackId, userId}
+        return prisma.feedback.findUnique({
+            where: {id: feedbackId, userId}
         });
     }
 
