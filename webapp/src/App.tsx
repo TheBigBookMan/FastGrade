@@ -8,6 +8,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import RubricsPage from './pages/RubricsPage';
 import FeedbackPage from './pages/FeedbackPage';
 import SettingsPage from './pages/SettingsPage';
+import { Toaster } from 'sonner';
 
 function App() {
     return (
@@ -26,6 +27,12 @@ function App() {
 					<Route path='/' element={<Navigate to='/dashboard' replace />} />
 				</Routes>
 			</div>
+			<Toaster 
+				position="top-right"
+				richColors
+				closeButton
+				duration={4000}
+			/>
 		</AuthProvider>
     )
 }
