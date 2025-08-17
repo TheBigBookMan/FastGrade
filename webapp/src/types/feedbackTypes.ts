@@ -5,6 +5,6 @@ export interface FeedbackData {
 }
 
 export interface FeedbackResponse {
-    succes: boolean;
+    success: boolean;
     message?: string;
 }
