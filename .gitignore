@@ -2,3 +2,4 @@ api/node_modules
 webapp/node_modules
 api/.env
 webapp/.env
+api/logs/*
