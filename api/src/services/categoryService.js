@@ -32,7 +32,7 @@ class CategoryService {
 
     async updateCategoryByUserId (userId, categoryId, { name, description, order }) {
         return prisma.category.update({
-            where: {categoryId, userId},
+            where: {id: categoryId, userId},
             data: { name, 
                 description, 
                 order, 

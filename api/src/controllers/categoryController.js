@@ -66,9 +66,9 @@ class CategoryController {
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', 'categoryId');
 
-            const updatedCategory = await categoryService.updateCategoryByUserId(userId, categoryId, { name, description, order });
+            await categoryService.updateCategoryByUserId(userId, categoryId, { name, description, order });
 
-            return res.json(updatedCategory);
+            return returnSuccess.successUpdate(res, 'Successfully updated category');
         }
         catch (err) {
             return returnError.internalError(res, 'Error updating category', err);
