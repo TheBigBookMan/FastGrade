@@ -19,7 +19,8 @@ class ReturnError {
         });
     };
 
-    internalError = (res) => {
+    internalError = (res, msg, err) => {
+        logger.error({msg, err});
         return res.status(500).json({             
             success: false,
             message: 'Internal server error',
