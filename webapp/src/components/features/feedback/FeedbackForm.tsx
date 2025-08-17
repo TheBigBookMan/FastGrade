@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import Button from '../../common/layout/Button';
-import { Input } from '../../common/layout/Input';
+import Input from '../../common/layout/Input';
 import { MdSend } from 'react-icons/md';
 import { FeedbackData } from '../../../types/feedbackTypes';
 import { useCreateFeedback } from '../../../hooks/useFeedback';
