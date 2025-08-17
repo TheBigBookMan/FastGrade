@@ -88,7 +88,7 @@ const LoginPage = () => {
 
                     <div>
                         <h2 className="mt-6 text-center text-3xl font-extrabold text-secondary-900">
-                            Welcome back
+                            Welcome
                         </h2>
                         <p className="mt-2 text-center text-sm text-secondary-600">
                             Sign in to your account to continue

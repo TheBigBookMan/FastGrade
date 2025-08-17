@@ -19,7 +19,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>({
+        id: '1',
+        email: 'test@test.com'
+    });
 
     const login = async (email: string, password: string) => {
         // Hardcoded login - accept any email/password for now
