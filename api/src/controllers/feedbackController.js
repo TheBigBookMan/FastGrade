@@ -21,11 +21,11 @@ class FeedbackController {
 
             const {title, description, userId} = req.body;
 
-            await feedbackService.createFeedback({
+            await feedbackService.createFeedback(
                 title,
                 description,
                 userId
-            });
+            );
 
             return returnSuccess.successCreate(res, 'Successfully created feedback');
 
