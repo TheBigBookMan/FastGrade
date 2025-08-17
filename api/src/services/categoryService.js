@@ -1,12 +1,12 @@
 import prisma from "../utils/prisma.js";
 
 class CategoryService {
-    async getCategoriesByUserId(userId) {
+    async getCategoriesByUserId(userId, includeComments = false) {
         return prisma.category.findMany({
             where: {userId},
             orderBy: {createdAt: 'desc'},
             include: {
-                comment: true
+                comments: includeComments
             }
         });
     }
