@@ -14,3 +14,8 @@ export interface CategoryResponse {
     data?: Category | Category[]
 }
 
+export interface CategoryData {
+    name: string;
+    description: string;
+    userId: string;
+}
