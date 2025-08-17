@@ -1,4 +1,3 @@
-import logger from "../utils/logger.js";
 import feedbackService from '../services/feedbackService.js';
 import returnError from "../middleware/returnError.js";
 import returnSuccess from "../middleware/returnSuccess.js";
@@ -9,7 +8,7 @@ class FeedbackController {
 
             const feedback = await feedbackService.fetchAllFeedback();
 
-            return res.json(feedback);
+            return returnSuccess.successFetch(res, feedback, 'feedback');
 
         } catch(err) {
             return returnError.internalError(res, 'Error fetching feedback', err);
