@@ -14,8 +14,7 @@ class TagController {
             return res.json(tags);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching tags by userId', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching tags by userId', err);
         }
     }
 
@@ -32,8 +31,7 @@ class TagController {
             return res.json(tag);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching tag by userId', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching tag by userId', err);
         }
     }
 
@@ -54,8 +52,7 @@ class TagController {
             return res.status(201).json(newTag);
 
         } catch(err) {
-            logger.error({ msg: 'Error creating tag.', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error creating tag.', err);
         }
     }
 }

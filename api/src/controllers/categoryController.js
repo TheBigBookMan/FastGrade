@@ -15,8 +15,7 @@ class CategoryController {
             return res.json(categories);
             
         } catch (err) {
-            logger.error({ msg: 'Error fetching categories by userId', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching categories by userId', err);
         }
     }
 
@@ -38,8 +37,7 @@ class CategoryController {
             return res.status(201).json(newCategory);
 
         } catch(err) {
-            logger.error({ msg: 'Error creating category', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error creating category', err);
         }
     }
 
@@ -55,8 +53,7 @@ class CategoryController {
 
             return res.json(category);
         } catch(err) {
-            logger.error({ msg: 'Error fetching category', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching category', err);
         }
     }
 
@@ -73,8 +70,7 @@ class CategoryController {
             return res.json(updatedCategory);
         }
         catch (err) {
-            logger.error({ msg: 'Error updating category', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error updating category', err);
         }
     }
 }

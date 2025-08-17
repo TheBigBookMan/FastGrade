@@ -13,8 +13,7 @@ class SettingsController {
 
             return res.json(settings);
         } catch (err) {
-            logger.error({ msg: 'Error fetching settings by user id', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching settings by user id', err);
         }
     }
 
@@ -29,8 +28,7 @@ class SettingsController {
             return res.status(201).json(newSettings);
         }
         catch (err) {
-            logger.error({ msg: 'Error posting settings', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error posting settings', err);
         }
     }
 
@@ -47,8 +45,7 @@ class SettingsController {
             return res.json(updatedSettings);
         }
         catch (err) {
-            logger.error({ msg: 'Error putting settings', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error putting settings', err);
         }
     }
 
@@ -63,8 +60,7 @@ class SettingsController {
             return res.json(defaultSettings);
         }
         catch (err) {
-            logger.error({ msg: 'Error setting default settings', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error setting default settings', err);
         }
     }
 }

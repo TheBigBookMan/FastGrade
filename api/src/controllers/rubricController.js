@@ -15,8 +15,7 @@ class RubricController {
             return res.json(rubrics);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching rubrics by userId', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching rubrics by userId', err);
         }
     }
 
@@ -39,8 +38,7 @@ class RubricController {
             return res.status(201).json(newRubric);
             
         } catch(err) {
-            logger.error({ msg: 'Error creating rubric', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error creating rubric', err);
         }
     }
 
@@ -57,8 +55,7 @@ class RubricController {
             return res.json(rubric);
             
         } catch(err) {
-            logger.error({ msg: 'Error fetching rubric', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching rubric', err);
         }
     }
 }

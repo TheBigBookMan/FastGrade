@@ -15,8 +15,7 @@ class CommentController {
             return res.json(comments);
 
         } catch (err) {
-            logger.error({ msg: 'Error fetching comments by userId', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching comments by userId', err);
         }
     }
 
@@ -38,8 +37,7 @@ class CommentController {
             return res.status(201).json(newComment);
 
         } catch(err) {
-            logger.error({ msg: 'Error creating comment', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error creating comment', err);
         }
     }
 
@@ -55,8 +53,7 @@ class CommentController {
 
             return res.json(comment);
         } catch(err) {
-            logger.error({ msg: 'Error fetching comments', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching comments', err);
         }
     }
 
@@ -72,8 +69,7 @@ class CommentController {
             return res.json(updatedComment);
         }
         catch (err) {
-            logger.error({ msg: 'Error updating comment', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error updating comment', err);
         }
     }
 }
