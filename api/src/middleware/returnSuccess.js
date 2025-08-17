@@ -1,12 +1,12 @@
 class ReturnSuccess {
-    successCreate(res, data = null, message = 'Resource created successfully') {
+    successCreate(res, message, data = null) {
         const response = {
             success: true,
             message,
             timestamp: new Date().toISOString()
         };
 
-        if(!data) response.data = data;
+        if(data) response.data = data;
 
         return res.status(201).json(response);
     }
