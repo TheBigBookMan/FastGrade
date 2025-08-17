@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import tagService from '../services/tagService.js';
-import returnError from "../utils/returnError.js";
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
 
 class TagController {
     async fetchTagsByUserId(req, res) {

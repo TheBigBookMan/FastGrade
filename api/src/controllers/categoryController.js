@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import categoryService from '../services/categoryService.js';
-import returnError from "../utils/returnError.js";
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
 
 class CategoryController {
     async fetchCategoriesByUserId (req, res) {

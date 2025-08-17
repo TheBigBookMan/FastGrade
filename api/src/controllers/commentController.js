@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import commentService from '../services/commentService.js';
-import returnError from "../utils/returnError.js";
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
 
 class CommentController {
     async fetchCommentsByUserId (req, res) {

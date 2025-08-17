@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import rubricService from '../services/rubricService.js';
-import returnError from "../utils/returnError.js";
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
 
 class RubricController {
     async fetchRubricsByUserId (req, res) {

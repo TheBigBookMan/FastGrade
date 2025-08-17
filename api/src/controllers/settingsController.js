@@ -1,6 +1,7 @@
 import logger from '../utils/logger.js';
 import settingsService from '../services/settingsService.js';
-import returnError from '../utils/returnError.js';
+import returnError from '../middleware/returnError.js';
+import returnSuccess from '../middleware/returnSuccess.js';
 
 class SettingsController {
     async fetchSettingsByUserId(req, res) {
