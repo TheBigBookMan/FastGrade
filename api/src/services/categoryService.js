@@ -21,9 +21,12 @@ class CategoryService {
         });
     }
 
-    async getCategoryByUserId (userId, categoryId) {
+    async getCategoryByUserId (userId, categoryId, includeComments) {
         return prisma.category.findUnique({
-            where: {userId, categoryId}
+            where: {userId, id: categoryId},
+            include: {
+                comments: includeComments
+            }
         });
     }
 

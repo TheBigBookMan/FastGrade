@@ -45,13 +45,14 @@ class CategoryController {
         try {
 
             const {userId, categoryId} = req.params;
+            const includeComments = req.query.includeComments === 'true';
 
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', 'categoryId');
 
-            const category = await categoryService.getCategoryByUserId(userId, categoryId);
+            const category = await categoryService.getCategoryByUserId(userId, categoryId, includeComments);
 
-            return res.json(category);
+            return returnSuccess.successFetch(res, category, 'Successfully fetched a category');
         } catch(err) {
             return returnError.internalError(res, 'Error fetching category', err);
         }
