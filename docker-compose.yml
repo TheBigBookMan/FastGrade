@@ -39,7 +39,7 @@ services:
     depends_on:
       - api
     environment:
-      VITE_API_URL: "http://localhost:5001"
+      VITE_API_URL: "http://localhost:5001/api"
     volumes:
       - ./webapp:/app
       - /app/node_modules
