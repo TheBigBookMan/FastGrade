@@ -11,7 +11,7 @@ export interface Category {
 export interface CategoryResponse {
     success: boolean;
     message?: string;
-    data?: Category | Category[]
+    data?: Category[]
 }
 
 export interface CategoryData {
