@@ -1,15 +1,27 @@
-import { InputHTMLAttributes, ReactNode, useState } from 'react';
+import { InputHTMLAttributes, ReactNode, useState, TextareaHTMLAttributes } from 'react';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface BaseInputProps {
     label?: string;
     error?: string;
     leftIcon?: ReactNode;
     rightIcon?: ReactNode;
     onRightIconClick?: () => void;
     fullWidth?: boolean;
+    as?: 'input' | 'textarea';
 }
 
-export const Input = ({ 
+interface InputProps extends BaseInputProps, InputHTMLAttributes<HTMLInputElement> {
+    as?: 'input';
+}
+
+interface TextareaProps extends BaseInputProps, TextareaHTMLAttributes<HTMLTextAreaElement> {
+    as: 'textarea';
+    rows?: number;
+}
+
+type InputComponentProps = InputProps | TextareaProps;
+
+const Input = ({ 
     label, 
     error, 
     leftIcon, 
@@ -18,8 +30,10 @@ export const Input = ({
     fullWidth = false,
     className = '',
     id,
+    as = 'input',
+    rows = 3,
     ...props 
-}: InputProps) => {
+}: InputComponentProps) => {
     const [isFocused, setIsFocused] = useState(false);
     
     const baseClasses = "appearance-none relative block w-full py-3 border placeholder-secondary-500 text-secondary-900 rounded-lg focus:outline-none focus:ring-2 focus:z-10 sm:text-sm transition-colors bg-white";
@@ -35,6 +49,14 @@ export const Input = ({
     const widthClass = fullWidth ? "w-full" : "";
     
     const classes = `${baseClasses} ${stateClasses} ${paddingClasses} ${rightPaddingClasses} ${widthClass} ${className}`;
+
+    const inputProps = {
+        id,
+        className: classes,
+        onFocus: () => setIsFocused(true),
+        onBlur: () => setIsFocused(false),
+        ...props
+    };
 
     return (
         <div className={fullWidth ? "w-full" : ""}>
@@ -53,13 +75,17 @@ export const Input = ({
                     </div>
                 )}
                 
-                <input
-                    id={id}
-                    className={classes}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    {...props}
-                />
+                {as === 'textarea' ? (
+                    <textarea
+                        {...inputProps as TextareaHTMLAttributes<HTMLTextAreaElement>}
+                        rows={rows}
+                        className={`${classes} resize-none`}
+                    />
+                ) : (
+                    <input
+                        {...inputProps as InputHTMLAttributes<HTMLInputElement>}
+                    />
+                )}
                 
                 {rightIcon && (
                     <button
