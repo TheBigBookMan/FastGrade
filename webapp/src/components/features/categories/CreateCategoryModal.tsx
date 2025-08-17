@@ -1,13 +1,17 @@
 import { useState } from "react";
 import Button from "../../common/layout/Button.tsx";
 import Input from "../../common/layout/Input.tsx";
+import { useCreateCategory } from "../../../hooks/useCategory.ts";
+import { toast } from "sonner";
 
 interface CreateCategoryModalProps {
     isOpen: boolean;
+    userId: string;
     onClose: () => void;
 }
 
-const CreateCategoryModal = ({ isOpen, onClose }: CreateCategoryModalProps) => {
+const CreateCategoryModal = ({ isOpen, userId, onClose }: CreateCategoryModalProps) => {
+    const {mutateAsync, isPending} = useCreateCategory();
     const [formData, setFormData] = useState({
         name: "",
         description: ""
@@ -15,12 +19,34 @@ const CreateCategoryModal = ({ isOpen, onClose }: CreateCategoryModalProps) => {
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-        // TODO: Call API to create category
-        console.log("Creating category:", formData);
-        setFormData({ name: "", description: "" });
-        onClose();
+        if(!userId) return;
+
+        if(!formData.name) {
+            toast.error('Please fill in all fields');
+            return;
+        }
+
+        try {
+
+            const response = await mutateAsync({
+                ...formData,
+                userId
+            });
+
+            if(response.success) {
+                setFormData({ name: "", description: "" });
+                onClose();
+                toast.success(response.message || 'Category successfully created');
+            } else {
+                toast.error(response.message || 'Failed to create category');
+            }
+
+        } catch(err: any) {
+            console.error('Network/Technical error:', err);
+            toast.error(err.message || 'Failed to create category');
+        }
     };
 
     return (
@@ -57,6 +83,7 @@ const CreateCategoryModal = ({ isOpen, onClose }: CreateCategoryModalProps) => {
                             type="submit"
                             variant="primary"
                             fullWidth
+                            isLoading={isPending}
                         >
                             Create Category
                         </Button>
