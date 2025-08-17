@@ -20,7 +20,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>({
-        id: '1',
+        id: 'cmefbpxze000069dq75m7jc7m',
         email: 'test@test.com'
     });
 
@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Set hardcoded user
         setUser({
-            id: '1',
-            email: email
+            id: 'cmefbpxze000069dq75m7jc7m',
+            email: 'test@test.com'
         });
     };
 
