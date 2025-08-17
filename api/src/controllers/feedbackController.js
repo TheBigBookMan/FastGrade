@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import feedbackService from '../services/feedbackService.js';
-import returnError from "../utils/returnError.js";
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
 
 class FeedbackController {
     async fetchAllFeedback (req, res) {
@@ -20,13 +21,13 @@ class FeedbackController {
 
             const {title, comment, userId} = req.body;
 
-            const newFeedback = await feedbackService.createFeedback({
+            await feedbackService.createFeedback({
                 title,
                 comment,
                 userId
             });
 
-            return res.status(201).json(newFeedback);
+            return returnSuccess.successCreate(res, 'Successfully created feedback');
 
         } catch(err) {
             return returnError.internalError(res, 'Error creating feedback', err);
