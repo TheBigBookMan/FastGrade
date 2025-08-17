@@ -28,6 +28,7 @@ services:
       - ./api:/app                  # live-edit your code
       - /app/node_modules           # keep deps inside container
       - /app/prisma
+      - ./api/logs:/app/logs
     # install deps on start (into /app/node_modules), then run
     command: sh -c "npm ci || npm install && npm run dev"
 
