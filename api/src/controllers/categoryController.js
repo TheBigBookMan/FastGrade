@@ -1,4 +1,3 @@
-import logger from "../utils/logger.js";
 import categoryService from '../services/categoryService.js';
 import returnError from "../middleware/returnError.js";
 import returnSuccess from "../middleware/returnSuccess.js";
@@ -23,19 +22,18 @@ class CategoryController {
     async postCategory (req, res) {
         try {
 
-            const {userId} = req.params;
-            const {name, description} = req.body;
+            const {name, description, userId} = req.body;
 
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!name) return returnError.loggerWarnRequiredAttribute(res, 'category', 'name');
 
-            const newCategory = await categoryService.createCategory({
+            await categoryService.createCategory(
                 userId,
                 name,
                 description
-            });
+            );
 
-            return res.status(201).json(newCategory);
+            return returnSuccess.successCreate(res, 'Successfully created a category');
 
         } catch(err) {
             return returnError.internalError(res, 'Error creating category', err);
