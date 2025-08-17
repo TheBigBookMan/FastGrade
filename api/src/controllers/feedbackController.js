@@ -11,8 +11,7 @@ class FeedbackController {
             return res.json(feedback);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching feedback' }, err);
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching feedback', err);
         }
     }
 
@@ -30,8 +29,7 @@ class FeedbackController {
             return res.status(201).json(newFeedback);
 
         } catch(err) {
-            logger.error({ msg: 'Error creating feedback', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error creating feedback', err);
         }
     }
 
@@ -48,8 +46,7 @@ class FeedbackController {
             return res.json(feedback);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching feedback', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching feedback', err);
         }
     }
 
@@ -65,8 +62,7 @@ class FeedbackController {
             return res.json(feedback);
 
         } catch(err) {
-            logger.error({ msg: 'Error fetching feedback', err });
-            return returnError.internalError(res);
+            return returnError.internalError(res, 'Error fetching feedback', err);
         }
     }
 }
