@@ -4,59 +4,21 @@ import CategoryList from "../components/features/categories/CategoryList";
 import CreateCategoryModal from "../components/features/categories/CreateCategoryModal";
 import { Category } from "../types/categoryTypes.ts";
 import { useAuth } from "../contexts/AuthContext.tsx";
-
-// Mock data
-const mockCategories: Category[] = [
-    {
-        id: "1",
-        name: "Grammar & Mechanics",
-        description: "Spelling, punctuation, and grammar errors",
-        order: 1,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
-    },
-    {
-        id: "2", 
-        name: "Content & Structure",
-        description: "Essay organization and flow",
-        order: 2,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
-    },
-    {
-        id: "3",
-        name: "Critical Thinking",
-        description: "Analysis and argument strength",
-        order: 3,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
-    },
-    {
-        id: "4",
-        name: "Research & Citations",
-        description: "Source quality and proper citation",
-        order: 4,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
-    },
-    {
-        id: "5",
-        name: "Style & Voice",
-        description: "Writing style and author voice",
-        order: 5,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
-    }
-];
+import { useCategories } from "../hooks/useCategory.ts";
+import LoadingSpinner from "../components/common/layout/LoadingSpinner.tsx";
+import ErrorState from "../components/common/layout/ErrorState.tsx";
 
 const CategoriesPage = () => {
     const {user} = useAuth();
+    if(!user) return;
+
+    const {data: categories = [], isLoading, error} = useCategories(user.id);
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [categories, setCategories] = useState<Category[]>(mockCategories);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const handleOrderChange = (newOrder: Category[]) => {
-        setCategories(newOrder);
+        // setCategories(newOrder);
         setHasUnsavedChanges(true);
     };
 
@@ -84,7 +46,8 @@ const CategoriesPage = () => {
                         )}
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
-                            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                            disabled={isLoading}
+                            className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:cursor-not-allowed"
                         >
                             <span>+</span>
                             Add Category
@@ -92,18 +55,37 @@ const CategoriesPage = () => {
                     </div>
                 </div>
                 
-                {user && (
-                    <CategoryList 
-                    categories={categories}
-                    onOrderChange={handleOrderChange}
-                    />
-                )}
+                {/* Content Area */}
+                <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-12">
+                    {isLoading ? (
+                        <LoadingSpinner 
+                            size="lg" 
+                            text="Loading categories..." 
+                            showText={true}
+                            className="space-y-4"
+                        />
+                    ) : error ? (
+                        <ErrorState 
+                            title="Failed to load categories"
+                            message="There was an error loading your categories. Please try refreshing the page."
+                        />
+                    ) : categories && categories.length > 0 ? (
+                        <CategoryList 
+                            categories={categories}
+                            onOrderChange={handleOrderChange}
+                        />
+                    ) : (
+                        <p className="text-secondary-600 text-lg font-medium text-center">
+                            No categories found
+                        </p>
+                    )}
+                </div>
                 
-                {user && (
+                {categories && (
                     <CreateCategoryModal 
-                    userId={user.id}
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
+                        userId={user.id}
+                        isOpen={isCreateModalOpen}
+                        onClose={() => setIsCreateModalOpen(false)}
                     />
                 )}
             </div>
