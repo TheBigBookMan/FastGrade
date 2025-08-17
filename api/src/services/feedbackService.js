@@ -5,12 +5,12 @@ class FeedbackService {
         return prisma.feedback.findMany();
     }
 
-    async createFeedback(title, comment, userId) {
+    async createFeedback(title, description, userId) {
         return prisma.feedback.create({
             data: {
                 userId,
                 title,
-                comment
+                description
             }
         });
     }

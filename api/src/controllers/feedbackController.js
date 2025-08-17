@@ -19,11 +19,11 @@ class FeedbackController {
     async createFeedback(req, res) {
         try {
 
-            const {title, comment, userId} = req.body;
+            const {title, description, userId} = req.body;
 
             await feedbackService.createFeedback({
                 title,
-                comment,
+                description,
                 userId
             });
 
