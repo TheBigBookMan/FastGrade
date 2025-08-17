@@ -3,6 +3,7 @@ import Header from "../components/common/layout/header/Header";
 import CategoryList from "../components/features/categories/CategoryList";
 import CreateCategoryModal from "../components/features/categories/CreateCategoryModal";
 import { Category } from "../types/categoryTypes.ts";
+import { useAuth } from "../contexts/AuthContext.tsx";
 
 // Mock data
 const mockCategories: Category[] = [
@@ -49,6 +50,7 @@ const mockCategories: Category[] = [
 ];
 
 const CategoriesPage = () => {
+    const {user} = useAuth();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [categories, setCategories] = useState<Category[]>(mockCategories);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -90,15 +92,20 @@ const CategoriesPage = () => {
                     </div>
                 </div>
                 
-                <CategoryList 
+                {user && (
+                    <CategoryList 
                     categories={categories}
                     onOrderChange={handleOrderChange}
-                />
+                    />
+                )}
                 
-                <CreateCategoryModal 
+                {user && (
+                    <CreateCategoryModal 
+                    userId={user.id}
                     isOpen={isCreateModalOpen}
                     onClose={() => setIsCreateModalOpen(false)}
-                />
+                    />
+                )}
             </div>
         </div>
     );
