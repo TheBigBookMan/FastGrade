@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import categoryService from "../services/categoryService";
 import { CategoryData } from "../types/categoryTypes";
 
@@ -11,8 +11,15 @@ export const categoryKeys = {
     detail: (id: string) => [...categoryKeys.details(), id] as const,
 };
 
-export const useCreateCategory = () => {
-    return useMutation({mutationFn: (data: CategoryData) => categoryService.createCategory(data)});
+export const useCreateCategory = (userId: string) => {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+        mutationFn: (data: CategoryData) => categoryService.createCategory(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: categoryKeys.list(userId) });
+        }
+    });
 }
 
 export const useCategories = (userId: string) => {

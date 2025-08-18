@@ -11,7 +11,7 @@ interface CreateCategoryModalProps {
 }
 
 const CreateCategoryModal = ({ isOpen, userId, onClose }: CreateCategoryModalProps) => {
-    const {mutateAsync, isPending} = useCreateCategory();
+    const {mutateAsync, isPending} = useCreateCategory(userId);
     const [formData, setFormData] = useState({
         name: "",
         description: ""
