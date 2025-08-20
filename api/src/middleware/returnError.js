@@ -27,6 +27,15 @@ class ReturnError {
             timestamp: new Date().toISOString() 
         });
     };
+
+    notFound(res, resource = 'Resource') {
+        logger.warn(`${resource} not found or doesn't belong to this user`);
+        return res.status(404).json({
+            success: false,
+            message: `${resource} not found or doesn't belong to this user`,
+            timestamp: new Date().toISOString()
+        });
+    }
 }
 
 export default new ReturnError();
