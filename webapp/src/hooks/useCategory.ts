@@ -31,3 +31,14 @@ export const useCategories = (userId: string) => {
         }
     })
 }
+
+export const useDeleteCategory = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({categoryId, userId}: {categoryId: string, userId: string}) => categoryService.deleteCategory(categoryId, userId),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: categoryKeys.list(variables.userId) })
+        }
+    })
+}
