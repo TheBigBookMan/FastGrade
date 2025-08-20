@@ -3,6 +3,9 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { MdDragIndicator, MdEdit, MdDelete, MdMoreVert } from "react-icons/md";
 import { Category } from "../../../types/categoryTypes.ts";
+import { useDeleteCategory } from "../../../hooks/useCategory.ts";
+import { toast } from "sonner";
+import LoadingSpinner from "../../common/layout/LoadingSpinner.tsx";
 
 interface CategoryCardProps {
     category: Category;
@@ -10,6 +13,7 @@ interface CategoryCardProps {
 
 const CategoryCard = ({ category }: CategoryCardProps) => {
     const [showMenu, setShowMenu] = useState(false);
+    const {mutateAsync, isPending} = useDeleteCategory();
     
     const {
         attributes,
@@ -23,6 +27,16 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+    };
+
+    const handleDelete = async () => {
+        try {
+            await mutateAsync({ categoryId: category.id, userId: category.userId });
+            toast.success('Category deleted successfully');
+            setShowMenu(false);
+        } catch (error) {
+            toast.error('Failed to delete category');
+        }
     };
 
     return (
@@ -53,27 +67,34 @@ const CategoryCard = ({ category }: CategoryCardProps) => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 relative">
-                <button
-                    onClick={() => setShowMenu(!showMenu)}
-                    className="p-2 hover:bg-secondary-200 rounded-lg transition-colors"
-                >
-                    <MdMoreVert className="w-5 h-5" />
-                </button>
-                
-                {showMenu && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
-                        <button className="w-full px-4 py-2 text-left hover:bg-secondary-50 flex items-center gap-2 text-sm">
-                            <MdEdit className="w-4 h-4" />
-                            Edit
-                        </button>
-                        <button className="w-full px-4 py-2 text-left hover:bg-secondary-50 text-error-600 flex items-center gap-2 text-sm">
-                            <MdDelete className="w-4 h-4" />
-                            Delete
-                        </button>
-                    </div>
-                )}
-            </div>
+            {isPending ? (
+                <LoadingSpinner />
+            ) : (
+                <div className="flex items-center gap-2 relative">
+                    <button
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="p-2 hover:bg-secondary-200 rounded-lg transition-colors"
+                    >
+                        <MdMoreVert className="w-5 h-5" />
+                    </button>
+                    
+                    {showMenu && (
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                            <button className="w-full px-4 py-2 text-left hover:bg-secondary-50 flex items-center gap-2 text-sm">
+                                <MdEdit className="w-4 h-4" />
+                                Edit
+                            </button>
+                            <button 
+                                onClick={handleDelete}
+                                className="w-full px-4 py-2 text-left hover:bg-secondary-50 text-error-600 flex items-center gap-2 text-sm"
+                            >
+                                <MdDelete className="w-4 h-4" />
+                                Delete
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
