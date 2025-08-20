@@ -74,6 +74,27 @@ class CategoryController {
             return returnError.internalError(res, 'Error updating category', err);
         }
     }
+
+    async deleteCategory (req, res) {
+        try {
+
+            const {categoryId, userId} = req.params;
+            
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!categoryId) return returnError.loggerWarnRequiredAttribute(res, 'category', categoryId);
+
+            const category = await categoryService.getCategoryByUserId(userId, categoryId);
+
+            if(!category) return returnError.notFound(res, 'Category');
+
+            await categoryService.deleteCategory(categoryId);
+
+            return returnSuccess.successDelete(res, 'Successfully deleted category');
+
+        } catch(err) {
+            return returnError.internalError(res, 'Error deleting category', err);
+        }
+    }
 }
 
 export default new CategoryController();
