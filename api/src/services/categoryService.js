@@ -40,6 +40,12 @@ class CategoryService {
             }
         });
     }
+
+    async deleteCategory(categoryId) {
+        return prisma.category.delete({
+            where: {id: categoryId}
+        });
+    }
 }
 
 export default new CategoryService();
