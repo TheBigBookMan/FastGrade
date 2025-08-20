@@ -11,6 +11,11 @@ class CategoryService {
         const response = await api.get(`/category/${userId}`);
         return response.data;
     }
+
+    async deleteCategory(categoryId: string, userId: string): Promise<CategoryResponse> {
+        const response = await api.delete(`/category/${categoryId}/user/${userId}`);
+        return response.data;
+    }
 }
 
 export default new CategoryService();
