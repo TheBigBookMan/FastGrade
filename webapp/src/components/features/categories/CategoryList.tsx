@@ -17,11 +17,12 @@ import CategoryCard from "./CategoryCard";
 import { Category } from "../../../types/categoryTypes";
 
 interface CategoryListProps {
+    userId: string;
     categories: Category[];
     onOrderChange: (categories: Category[]) => void;
 }
 
-const CategoryList = ({ categories, onOrderChange }: CategoryListProps) => {
+const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) => {
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -67,6 +68,7 @@ const CategoryList = ({ categories, onOrderChange }: CategoryListProps) => {
                     <div className="divide-y divide-secondary-200">
                         {categories.map((category) => (
                             <CategoryCard 
+                                userId={userId}
                                 key={category.id}
                                 category={category}
                             />
