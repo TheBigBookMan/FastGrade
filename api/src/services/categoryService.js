@@ -4,7 +4,7 @@ class CategoryService {
     async getCategoriesByUserId(userId, includeComments = false) {
         return prisma.category.findMany({
             where: {userId},
-            orderBy: {createdAt: 'desc'},
+            orderBy: {order: 'asc'},
             include: {
                 comments: includeComments
             }
