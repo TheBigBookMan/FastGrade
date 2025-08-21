@@ -46,6 +46,17 @@ class CategoryService {
             where: {id: categoryId}
         });
     }
+
+    async updateCategoryOrder(categoryIds) {
+        await prisma.$transaction(
+            categoryIds.map((catId, idx) => prisma.category.update({
+                where: {id: catId},
+                data: {
+                    order: idx + 1
+                }
+            }))
+        );
+    }
 }
 
 export default new CategoryService();
