@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Button from "./Button.tsx";
 import { MdWarning } from "react-icons/md";
 
@@ -25,7 +25,30 @@ const ConfirmationModal = ({
     onCancel,
     isLoading = false
 }: ConfirmationModalProps) => {
-    if (!isOpen) return null;
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+            // Start with hidden state, then animate in
+            setIsAnimating(false);
+            // Small delay to ensure DOM is ready, then animate in
+            const timer = setTimeout(() => {
+                setIsAnimating(true);
+            }, 10);
+            return () => clearTimeout(timer);
+        } else {
+            setIsAnimating(false);
+            // Wait for exit animation to complete before removing from DOM
+            const timer = setTimeout(() => {
+                setShouldRender(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    if (!shouldRender) return null;
 
     const variantClasses = {
         danger: {
@@ -48,17 +71,31 @@ const ConfirmationModal = ({
     const currentVariant = variantClasses[variant];
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div 
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-300 ease-out ${
+                isAnimating 
+                    ? 'bg-black bg-opacity-50' 
+                    : 'bg-black bg-opacity-0'
+            }`}
+            onClick={onCancel}
+        >
+            <div 
+                className={`bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-2xl transition-all duration-300 ease-out transform ${
+                    isAnimating 
+                        ? 'opacity-100 scale-100 translate-y-0' 
+                        : 'opacity-0 scale-95 -translate-y-8'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="flex items-center gap-3 mb-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentVariant.iconBg}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentVariant.iconBg} transition-colors duration-200`}>
                         <MdWarning className={`w-6 h-6 ${currentVariant.icon}`} />
                     </div>
                     <h2 className="text-xl font-bold text-secondary-900">{title}</h2>
                 </div>
                 
                 <div className="mb-6">
-                    <p className="text-secondary-600">
+                    <p className="text-secondary-600 leading-relaxed">
                         {message}
                     </p>
                 </div>
@@ -70,6 +107,7 @@ const ConfirmationModal = ({
                         onClick={onCancel}
                         disabled={isLoading}
                         fullWidth
+                        className="transition-all duration-200 hover:scale-[1.02]"
                     >
                         {cancelText}
                     </Button>
@@ -80,6 +118,7 @@ const ConfirmationModal = ({
                         disabled={isLoading}
                         isLoading={isLoading}
                         fullWidth
+                        className="transition-all duration-200 hover:scale-[1.02]"
                     >
                         {confirmText}
                     </Button>
