@@ -8,5 +8,6 @@ router.get('/:categoryId/user/:userId', categoryController.fetchCategoryByUserId
 router.put('/:categoryId/user/:userId', categoryController.updateCategoryByUserId);
 router.delete('/:categoryId/user/:userId', categoryController.deleteCategory);
 router.post('/', categoryController.postCategory);
+router.put('/user/:userId/order', categoryController.updateCategoryOrder);
 
 export default router;
