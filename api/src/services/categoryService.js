@@ -42,9 +42,38 @@ class CategoryService {
         });
     }
 
-    async deleteCategory(categoryId) {
-        return prisma.category.delete({
-            where: {id: categoryId}
+    async deleteCategory(categoryId, userId) {
+        // Use a transaction to delete the category and update order numbers
+        return await prisma.$transaction(async (tx) => {
+            // First, get the category to be deleted to know its order
+            const categoryToDelete = await tx.category.findUnique({
+                where: { id: categoryId }
+            });
+
+            if (!categoryToDelete) {
+                throw new Error('Category not found');
+            }
+
+            // Delete the category
+            await tx.category.delete({
+                where: { id: categoryId }
+            });
+
+            // Get all remaining categories for this user, ordered by current order
+            const remainingCategories = await tx.category.findMany({
+                where: { userId },
+                orderBy: { order: 'asc' }
+            });
+
+            // Update the order numbers for all remaining categories
+            for (let i = 0; i < remainingCategories.length; i++) {
+                await tx.category.update({
+                    where: { id: remainingCategories[i].id },
+                    data: { order: i + 1 }
+                });
+            }
+
+            return { success: true };
         });
     }
 
