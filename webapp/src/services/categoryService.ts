@@ -1,5 +1,5 @@
 import { api } from "../utils/api";
-import { Category, CategoryResponse, CategoryData } from "../types/categoryTypes";
+import { CategoryResponse, CategoryData } from "../types/categoryTypes";
 
 class CategoryService {
     async createCategory(data: CategoryData): Promise<CategoryResponse> {
@@ -9,6 +9,11 @@ class CategoryService {
 
     async getCategories(userId: string): Promise<CategoryResponse> {
         const response = await api.get(`/category/${userId}`);
+        return response.data;
+    }
+
+    async updateCategory(categoryId: string, userId: string, data: Partial<CategoryData>): Promise<CategoryResponse> {
+        const response = await api.put(`/category/${categoryId}/user/${userId}`, data);
         return response.data;
     }
 
