@@ -53,7 +53,7 @@ const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) 
         <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
             <div className="p-4 border-b border-secondary-200">
                 <h2 className="text-lg font-medium text-secondary-900">Category Order</h2>
-                <p className="text-sm text-secondary-600">Drag and drop to reorder categories</p>
+                <p className="text-sm text-secondary-600">Drag and drop to reorder categories, this is the order displayed on the side panel</p>
             </div>
             
             <DndContext
