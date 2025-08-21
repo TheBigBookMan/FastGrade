@@ -11,12 +11,13 @@ class CategoryService {
         });
     }
 
-    async createCategory (userId, name, description) {
+    async createCategory (userId, name, description, order) {
         return prisma.category.create({
             data: {
                 userId,
                 name,
-                description
+                description,
+                order
             }
         });
     }

@@ -28,10 +28,14 @@ class CategoryController {
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!name) return returnError.loggerWarnRequiredAttribute(res, 'category', 'name');
 
+            const categories = await categoryService.getCategoriesByUserId(userId);
+            const orderNumber = categories.length + 1;
+
             await categoryService.createCategory(
                 userId,
                 name,
-                description
+                description,
+                orderNumber
             );
 
             return returnSuccess.successCreate(res, 'Successfully created a category');
