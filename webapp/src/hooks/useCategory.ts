@@ -54,3 +54,14 @@ export const useUpdateCategory = () => {
         }
     })
 }
+
+export const useUpdateCategoryOrder = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({userId, categoryIds}: {userId: string, categoryIds: string[]}) => categoryService.updateCategoryOrder(userId, categoryIds),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: categoryKeys.list(variables.userId) });
+        }
+    })
+}
