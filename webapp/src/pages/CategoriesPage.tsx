@@ -71,6 +71,7 @@ const CategoriesPage = () => {
                         />
                     ) : categories && categories.length > 0 ? (
                         <CategoryList 
+                            userId={user.id}
                             categories={categories}
                             onOrderChange={handleOrderChange}
                         />
