@@ -1,32 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/common/layout/header/Header";
 import CategoryList from "../components/features/categories/CategoryList";
 import CreateCategoryModal from "../components/features/categories/CreateCategoryModal";
 import { Category } from "../types/categoryTypes.ts";
 import { useAuth } from "../contexts/AuthContext.tsx";
-import { useCategories } from "../hooks/useCategory.ts";
+import { useCategories, useUpdateCategoryOrder } from "../hooks/useCategory.ts";
 import LoadingSpinner from "../components/common/layout/LoadingSpinner.tsx";
 import ErrorState from "../components/common/layout/ErrorState.tsx";
+import { toast } from "sonner";
 
 const CategoriesPage = () => {
     const {user} = useAuth();
     if(!user) return;
 
-    const {data: categories = [], isLoading, error} = useCategories(user.id);
+    const {data: apiCategories = [], isLoading, error} = useCategories(user.id);
+    const updateCategoryOrder = useUpdateCategoryOrder();
 
+    const [localCategories, setLocalCategories] = useState<Category[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+    useEffect(() => {
+        if (apiCategories.length > 0 && localCategories.length === 0) {
+            setLocalCategories(apiCategories);
+        }
+    }, [apiCategories, localCategories.length]);
+
     const handleOrderChange = (newOrder: Category[]) => {
-        // setCategories(newOrder);
+        const updatedOrder = newOrder.map((category, index) => ({
+            ...category,
+            order: index + 1
+        }));
+
+        setLocalCategories(updatedOrder);
         setHasUnsavedChanges(true);
     };
 
-    const handleSaveOrder = () => {
-        // TODO: Call API to save the new order
-        console.log("Saving new order:", categories);
-        setHasUnsavedChanges(false);
-        // You can add a toast notification here
+    const handleSaveOrder = async () => {
+        try {
+            const categoryIds = localCategories.map(cat => cat.id);
+            const response = await updateCategoryOrder.mutateAsync({
+                userId: user.id,
+                categoryIds
+            });
+
+            if(response.success) {
+                setHasUnsavedChanges(false);
+                toast.success(response.message || 'Category order successfully updated');
+            } else {
+                toast.error(response.message || 'Failed to update category order');
+            }
+        } catch (err: any) {
+            console.error('Failed to save category order:', err);
+            toast.error(err.message || 'Failed to create category');
+        }
     };
 
     return (
@@ -39,9 +66,10 @@ const CategoriesPage = () => {
                         {hasUnsavedChanges && (
                             <button
                                 onClick={handleSaveOrder}
-                                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
+                                disabled={updateCategoryOrder.isPending}
+                                className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white px-4 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
                             >
-                                Save Order
+                                {updateCategoryOrder.isPending ? 'Saving...' : 'Save Order'}
                             </button>
                         )}
                         <button
@@ -69,10 +97,10 @@ const CategoriesPage = () => {
                             title="Failed to load categories"
                             message="There was an error loading your categories. Please try refreshing the page."
                         />
-                    ) : categories && categories.length > 0 ? (
-                        <CategoryList 
+                    ) : localCategories && localCategories.length > 0 ? (
+                        <CategoryList
                             userId={user.id}
-                            categories={categories}
+                            categories={localCategories}
                             onOrderChange={handleOrderChange}
                         />
                     ) : (
@@ -82,8 +110,8 @@ const CategoriesPage = () => {
                     )}
                 </div>
                 
-                {categories && (
-                    <CreateCategoryModal 
+                {localCategories && (
+                    <CreateCategoryModal
                         userId={user.id}
                         isOpen={isCreateModalOpen}
                         onClose={() => setIsCreateModalOpen(false)}
