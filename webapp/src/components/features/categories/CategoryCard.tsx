@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { MdDragIndicator, MdEdit, MdDelete, MdMoreVert, MdCheck, MdClose } from "react-icons/md";
@@ -12,16 +12,20 @@ import ConfirmationModal from "../../common/layout/ConfirmationModal.tsx";
 interface CategoryCardProps {
     category: Category;
     userId: string;
+    onMenuOpen?: (categoryId: string) => void;
+    isMenuOpen?: boolean;
 }
 
-const CategoryCard = ({ category, userId }: CategoryCardProps) => {
-    const [showMenu, setShowMenu] = useState(false);
+const CategoryCard = ({ category, userId, onMenuOpen, isMenuOpen }: CategoryCardProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editData, setEditData] = useState({
         name: category.name,
         description: category.description || ''
     });
+
+    const menuRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     const deleteCategory = useDeleteCategory();
     const updateCategory = useUpdateCategory();
@@ -40,11 +44,33 @@ const CategoryCard = ({ category, userId }: CategoryCardProps) => {
         transition,
     };
 
+    // Handle click outside to close menu
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                menuRef.current && 
+                !menuRef.current.contains(event.target as Node) &&
+                buttonRef.current && 
+                !buttonRef.current.contains(event.target as Node)
+            ) {
+                onMenuOpen?.('');
+            }
+        };
+
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen, onMenuOpen]);
+
     const handleDelete = async () => {
         try {
             await deleteCategory.mutateAsync({ categoryId: category.id, userId: category.userId });
             toast.success('Category deleted successfully');
-            setShowMenu(false);
+            onMenuOpen?.('');
             setShowDeleteConfirm(false);
         } catch (error) {
             toast.error('Failed to delete category');
@@ -53,7 +79,7 @@ const CategoryCard = ({ category, userId }: CategoryCardProps) => {
 
     const handleEdit = () => {
         setIsEditing(true);
-        setShowMenu(false);
+        onMenuOpen?.('');
     };
 
     const handleSave = async () => {
@@ -88,7 +114,15 @@ const CategoryCard = ({ category, userId }: CategoryCardProps) => {
 
     const openDeleteConfirm = () => {
         setShowDeleteConfirm(true);
-        setShowMenu(false);
+        onMenuOpen?.('');
+    };
+
+    const toggleMenu = () => {
+        if (isMenuOpen) {
+            onMenuOpen?.('');
+        } else {
+            onMenuOpen?.(category.id);
+        }
     };
 
     return (
@@ -166,38 +200,45 @@ const CategoryCard = ({ category, userId }: CategoryCardProps) => {
                     ) : (
                         <div className="relative">
                             <button
-                                onClick={() => setShowMenu(!showMenu)}
+                                ref={buttonRef}
+                                onClick={toggleMenu}
                                 disabled={deleteCategory.isPending}
                                 className="p-2 hover:bg-secondary-200 rounded-lg transition-colors disabled:opacity-50"
                             >
                                 <MdMoreVert className="w-5 h-5" />
                             </button>
 
-                            {showMenu && (
-                                <div className="absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
-                                    <button
-                                        onClick={handleEdit}
-                                        className="w-full px-4 py-2 text-left hover:bg-secondary-50 flex items-center gap-2 text-sm"
-                                    >
-                                        <MdEdit className="w-4 h-4" />
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={openDeleteConfirm}
-                                        disabled={deleteCategory.isPending}
-                                        className="w-full px-4 py-2 text-left hover:bg-secondary-50 text-error-600 flex items-center gap-2 text-sm disabled:opacity-50"
-                                    >
-                                        {deleteCategory.isPending ? (
-                                            <LoadingSpinner size="sm" />
-                                        ) : (
-                                            <>
-                                                <MdDelete className="w-4 h-4" />
-                                                Delete
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
+                            {/* Animated dropdown menu */}
+                            <div
+                                ref={menuRef}
+                                className={`absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px] transition-all duration-200 ease-in-out ${
+                                    isMenuOpen 
+                                        ? 'opacity-100 scale-100 translate-y-0' 
+                                        : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                }`}
+                            >
+                                <button
+                                    onClick={handleEdit}
+                                    className="w-full px-4 py-2 text-left hover:bg-secondary-50 flex items-center gap-2 text-sm transition-colors"
+                                >
+                                    <MdEdit className="w-4 h-4" />
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={openDeleteConfirm}
+                                    disabled={deleteCategory.isPending}
+                                    className="w-full px-4 py-2 text-left hover:bg-secondary-50 text-error-600 flex items-center gap-2 text-sm disabled:opacity-50 transition-colors"
+                                >
+                                    {deleteCategory.isPending ? (
+                                        <LoadingSpinner size="sm" />
+                                    ) : (
+                                        <>
+                                            <MdDelete className="w-4 h-4" />
+                                            Delete
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

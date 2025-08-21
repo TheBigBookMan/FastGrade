@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
     DndContext,
     closestCenter,
@@ -17,12 +18,14 @@ import CategoryCard from "./CategoryCard";
 import { Category } from "../../../types/categoryTypes";
 
 interface CategoryListProps {
-    userId: string;
     categories: Category[];
     onOrderChange: (categories: Category[]) => void;
+    userId: string;
 }
 
-const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) => {
+const CategoryList = ({ categories, onOrderChange, userId }: CategoryListProps) => {
+    const [openMenuId, setOpenMenuId] = useState<string>('');
+
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -39,7 +42,6 @@ const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) 
 
             const newOrder = arrayMove(categories, oldIndex, newIndex);
             
-            // Update the order property for each item
             const updatedItems = newOrder.map((item, index) => ({
                 ...item,
                 order: index + 1
@@ -49,11 +51,15 @@ const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) 
         }
     };
 
+    const handleMenuOpen = (categoryId: string) => {
+        setOpenMenuId(categoryId);
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
             <div className="p-4 border-b border-secondary-200">
                 <h2 className="text-lg font-medium text-secondary-900">Category Order</h2>
-                <p className="text-sm text-secondary-600">Drag and drop to reorder categories, this is the order displayed on the side panel</p>
+                <p className="text-sm text-secondary-600">Drag and drop to reorder categories</p>
             </div>
             
             <DndContext
@@ -68,9 +74,11 @@ const CategoryList = ({ userId, categories, onOrderChange }: CategoryListProps) 
                     <div className="divide-y divide-secondary-200">
                         {categories.map((category) => (
                             <CategoryCard 
-                                userId={userId}
                                 key={category.id}
                                 category={category}
+                                userId={userId}
+                                onMenuOpen={handleMenuOpen}
+                                isMenuOpen={openMenuId === category.id}
                             />
                         ))}
                     </div>
