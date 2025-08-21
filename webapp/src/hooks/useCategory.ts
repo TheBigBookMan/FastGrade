@@ -42,3 +42,15 @@ export const useDeleteCategory = () => {
         }
     })
 }
+
+export const useUpdateCategory = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({categoryId, userId, data}: {categoryId: string, userId: string, data: Partial<CategoryData>}) => categoryService.updateCategory(categoryId, userId, data),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: categoryKeys.detail(variables.userId) });
+            queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
+        }
+    })
+}
