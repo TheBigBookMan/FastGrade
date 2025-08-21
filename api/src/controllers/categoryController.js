@@ -95,6 +95,28 @@ class CategoryController {
             return returnError.internalError(res, 'Error deleting category', err);
         }
     }
+
+    async updateCategoryOrder(req, res) {
+        try {
+
+            const {userId} = req.params;
+            const {categoryIds} = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+
+            const category = await categoryService.getCategoriesByUserId(userId);
+            category.forEach(cat => {
+                if(cat.userId !== userId) return returnError.notFound(res, 'Category');
+            });
+
+            await categoryService.updateCategoryOrder(categoryIds);
+
+            return returnSuccess.successUpdate(res, 'Successfully update category order');
+
+        } catch(err) {
+            return returnError.internalError(res, 'Error updating category order', err);
+        }
+    }
 }
 
 export default new CategoryController();
