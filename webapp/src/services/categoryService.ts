@@ -17,6 +17,11 @@ class CategoryService {
         return response.data;
     }
 
+    async updateCategoryOrder(userId: string, categoryIds: string[]): Promise<CategoryResponse> {
+        const response = await api.put(`/category/user/${userId}/order`, { categoryIds });
+        return response.data;
+    }
+
     async deleteCategory(categoryId: string, userId: string): Promise<CategoryResponse> {
         const response = await api.delete(`/category/${categoryId}/user/${userId}`);
         return response.data;
