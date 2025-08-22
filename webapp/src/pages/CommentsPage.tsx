@@ -1,136 +1,62 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "../components/common/layout/header/Header";
 import CommentAccordion from "../components/features/comments/CommentAccordion";
 import CreateCommentModal from "../components/features/comments/CreateCommentModal";
+import LoadingSpinner from "../components/common/layout/LoadingSpinner";
+import ErrorState from "../components/common/layout/ErrorState";
 import { Category } from "../types/categoryTypes.ts";
 import { Comment } from "../types/commentTypes.ts";
-
-// Mock data
-const mockCategories: Category[] = [
-    {
-        id: '1',
-        name: 'Code Review',
-        description: 'Comments for code review feedback',
-        order: 1,
-        userId: 'user1',
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-    },
-    {
-        id: '2',
-        name: 'Bug Reports',
-        description: 'Comments for bug reports and issues',
-        order: 2,
-        userId: 'user1',
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-    },
-    {
-        id: '3',
-        name: 'Feature Requests',
-        description: 'Comments for new feature ideas',
-        order: 3,
-        userId: 'user1',
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-    }
-];
-
-const mockComments: Comment[] = [
-    {
-        id: '1',
-        title: 'Great work on the refactoring',
-        body: 'The code is much cleaner now. Good job breaking down the complex function into smaller, more manageable pieces.',
-        userId: 'user1',
-        categoryId: '1',
-        isFavourite: true,
-        order: 1,
-        useCount: 5,
-        lastUsedAt: '2024-01-15T10:30:00Z',
-        createdAt: '2024-01-10T00:00:00Z',
-        updatedAt: '2024-01-15T10:30:00Z'
-    },
-    {
-        id: '2',
-        title: 'Consider adding error handling',
-        body: 'This function could benefit from better error handling, especially for edge cases.',
-        userId: 'user1',
-        categoryId: '1',
-        isFavourite: false,
-        order: 2,
-        useCount: 2,
-        lastUsedAt: '2024-01-12T14:20:00Z',
-        createdAt: '2024-01-11T00:00:00Z',
-        updatedAt: '2024-01-12T14:20:00Z'
-    },
-    {
-        id: '3',
-        title: 'Login page crashes on mobile',
-        body: 'The login page crashes when accessed from mobile devices. Steps to reproduce: 1. Open app on mobile 2. Try to login 3. App crashes',
-        userId: 'user1',
-        categoryId: '2',
-        isFavourite: true,
-        order: 1,
-        useCount: 8,
-        lastUsedAt: '2024-01-16T09:15:00Z',
-        createdAt: '2024-01-13T00:00:00Z',
-        updatedAt: '2024-01-16T09:15:00Z'
-    },
-    {
-        id: '4',
-        title: 'Add dark mode support',
-        body: 'It would be great to have a dark mode option for better user experience, especially for users who work in low-light environments.',
-        userId: 'user1',
-        categoryId: '3',
-        isFavourite: false,
-        order: 1,
-        useCount: 3,
-        lastUsedAt: '2024-01-14T16:45:00Z',
-        createdAt: '2024-01-14T00:00:00Z',
-        updatedAt: '2024-01-14T16:45:00Z'
-    },
-    {
-        id: '5',
-        title: 'Quick note about performance',
-        body: 'The dashboard loads a bit slow on slower connections. Maybe we can optimize the data fetching.',
-        userId: 'user1',
-        categoryId: undefined, // This will go to "Other"
-        isFavourite: false,
-        order: 1,
-        useCount: 1,
-        lastUsedAt: '2024-01-15T11:00:00Z',
-        createdAt: '2024-01-15T00:00:00Z',
-        updatedAt: '2024-01-15T11:00:00Z'
-    }
-];
+import { useAuth } from "../contexts/AuthContext.tsx";
+import { useComments } from "../hooks/useComment.ts";
+import { useCategories } from "../hooks/useCategory.ts";
 
 const CommentsPage = () => {
+    const { user } = useAuth();
+    if (!user) return null;
+
+    const { data: comments, isLoading: commentsLoading, error: commentsError } = useComments(user.id, true);
+    const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories(user.id);
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
-    // Organize comments by category
-    const commentsByCategory = mockComments.reduce((acc, comment) => {
-        const categoryId = comment.categoryId || 'other';
-        if (!acc[categoryId]) {
-            acc[categoryId] = [];
-        }
-        acc[categoryId].push(comment);
-        return acc;
-    }, {} as Record<string, Comment[]>);
-
-    // Create "Other" category for comments without a category
-    const allCategories = [...mockCategories];
-    if (commentsByCategory['other'] && commentsByCategory['other'].length > 0) {
-        allCategories.push({
-            id: 'other',
-            name: 'Other',
-            description: 'Comments without a category',
-            order: mockCategories.length + 1,
-            userId: 'user1',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+    // Group comments by category
+    const commentsByCategory = useMemo(() => {
+        if (!comments) return {};
+        
+        const grouped: Record<string, Comment[]> = {};
+        
+        comments.forEach((comment) => {
+            const categoryId = comment.categoryId || 'other';
+            if (!grouped[categoryId]) {
+                grouped[categoryId] = [];
+            }
+            grouped[categoryId].push(comment);
         });
-    }
+        
+        return grouped;
+    }, [comments]);
+
+    // Create "Other" category for uncategorized comments
+    const allCategories = useMemo(() => {
+        const categoryList: Category[] = categories || [];
+        
+        // Add "Other" category if there are uncategorized comments
+        if (commentsByCategory['other'] && commentsByCategory['other'].length > 0) {
+            const otherCategory: Category = {
+                id: 'other',
+                name: 'Other',
+                description: 'Uncategorized comments',
+                userId: user.id,
+                order: categoryList.length + 1,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            categoryList.push(otherCategory);
+        }
+        
+        return categoryList;
+    }, [categories, commentsByCategory, user.id]);
 
     const toggleCategory = (categoryId: string) => {
         const newExpanded = new Set(expandedCategories);
@@ -141,6 +67,33 @@ const CommentsPage = () => {
         }
         setExpandedCategories(newExpanded);
     };
+
+    // Loading state
+    if (commentsLoading || categoriesLoading) {
+        return (
+            <div className="min-h-screen bg-secondary-50">
+                <Header />
+                <div className="container mx-auto px-4 py-8">
+                    <LoadingSpinner />
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (commentsError || categoriesError) {
+        return (
+            <div className="min-h-screen bg-secondary-50">
+                <Header />
+                <div className="container mx-auto px-4 py-8">
+                    <ErrorState 
+                        message="Failed to load comments or categories" 
+                        onRetry={() => window.location.reload()} 
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-secondary-50">
@@ -168,7 +121,7 @@ const CommentsPage = () => {
                                     comments={commentsByCategory[category.id] || []}
                                     isExpanded={expandedCategories.has(category.id)}
                                     onToggle={() => toggleCategory(category.id)}
-                                    userId="user1"
+                                    userId={user.id}
                                 />
                             ))}
                         </div>
@@ -183,8 +136,8 @@ const CommentsPage = () => {
 
                 {isCreateModalOpen && (
                     <CreateCommentModal
-                        userId="user1"
-                        categories={mockCategories}
+                        userId={user.id}
+                        categories={categories || []}
                         isOpen={isCreateModalOpen}
                         onClose={() => setIsCreateModalOpen(false)}
                     />
