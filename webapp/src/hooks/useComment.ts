@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import commentService from "../services/commentService";
 import { CommentData } from "../types/commentTypes";
 
@@ -18,6 +18,16 @@ export const useCreateComment = (userId: string) => {
         mutationFn: (data: CommentData) => commentService.createComment(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: commentKeys.list(userId)});
+        }
+    })
+}
+
+export const useComments = (userId: string, includeCategories: boolean) => {
+    return useQuery({
+        queryKey: commentKeys.list(userId),
+        queryFn: async () => {
+            const response = await commentService.getComments(userId, includeCategories);
+            return response.data || null;
         }
     })
 }
