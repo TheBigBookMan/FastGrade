@@ -34,7 +34,7 @@ model Comment {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String
     category Category? @relation(fields: [categoryId], references: [id])
-    categoryId String
+    categoryId String?
     isFavourite Boolean @default(false)
     order Int @default(0)
     useCount Int @default(0)
