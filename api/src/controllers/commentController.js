@@ -23,7 +23,23 @@ class CommentController {
     async postComment (req, res) {
         try {
 
+            let { userId, body, categoryId, keywords, title } = req.body;
 
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!body) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'body');
+
+            categoryId = categoryId || null;
+            keywords = keywords || null;
+
+            await commentService.createComment(
+                userId,
+                title,
+                body,
+                categoryId,
+                keywords, 
+            );
+
+            return returnSuccess.successCreate(res, 'Successfully created a comment');
 
         } catch(err) {
             return returnError.internalError(res, 'Error creating comment', err);
