@@ -1,26 +1,18 @@
 import prisma from '../utils/prisma.js';
 
 class CommentService {
-    async getCommentsByUserId (userId) {
+    async getCommentsByUserId (userId, includeCategories = false) {
         return prisma.comment.findMany({
                 where: { userId },
                 orderBy: { createdAt: 'desc' },
                 include: {
-                category: true, // optional: include category info
+                category: includeCategories,
             },
         });
     }
 
-    async createComment({ userId, title, body, categoryId, keywords }) {
-        return prisma.comment.create({
-            data: {
-                userId,
-                title,
-                body,
-                categoryId,
-                keywords
-            }
-        });
+    async createComment(userId, title, body, categoryId, keywords) {
+
     }
 
     async getCommentByUserId (userId, commentId) {
