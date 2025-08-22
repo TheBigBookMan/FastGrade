@@ -13,11 +13,13 @@ class CommentService {
 
     async createComment(userId, title, body, categoryId, keywords) {
         return prisma.comment.create({
-            userId,
-            title,
-            body,
-            categoryId,
-            keywords
+            data: {
+                userId,
+                title,
+                body,
+                categoryId,
+                keywords
+            }
         });
     }
 

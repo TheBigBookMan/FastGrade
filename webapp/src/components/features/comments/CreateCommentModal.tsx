@@ -3,6 +3,7 @@ import Button from "../../common/layout/Button.tsx";
 import Input from "../../common/layout/Input.tsx";
 import { Category } from "../../../types/categoryTypes.ts";
 import { toast } from "sonner";
+import { useCreateComment } from "../../../hooks/useComment.ts";
 
 interface CreateCommentModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ const CreateCommentModal = ({
     onClose, 
     preselectedCategoryId 
 }: CreateCommentModalProps) => {
+    const {mutateAsync, isPending} = useCreateComment(userId);
     const [formData, setFormData] = useState({
         title: "",
         body: "",
@@ -36,10 +38,25 @@ const CreateCommentModal = ({
             return;
         }
 
-        // Mock create - just show success message
-        toast.success('Comment successfully created');
-        setFormData({ title: "", body: "", categoryId: preselectedCategoryId || "" });
-        onClose();
+        try {
+
+            const response = await mutateAsync({
+                ...formData,
+                userId
+            });
+
+            if(response.success) {
+                toast.success('Comment successfully created');
+                setFormData({ title: "", body: "", categoryId: preselectedCategoryId || "" });
+                onClose();
+            } else {
+                toast.error(response.message || 'Failed to create comment');
+            }
+
+        } catch(err: any) {
+            console.error('Network/Technical error', err);
+            toast.error(err.message || 'Failed to create comment');
+        }
     };
 
     return (
