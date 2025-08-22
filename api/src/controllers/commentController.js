@@ -1,4 +1,3 @@
-import logger from "../utils/logger.js";
 import commentService from '../services/commentService.js';
 import returnError from "../middleware/returnError.js";
 import returnSuccess from "../middleware/returnSuccess.js";
@@ -8,12 +7,13 @@ class CommentController {
         try {
 
             const { userId } = req.params;
+            const includeCategories = req.query.includeCategories === 'true';
 
             if(!userId) return returnError.loggerWarnUserId(res);
 
-            const comments = await commentService.getCommentsByUserId(userId);
+            const comments = await commentService.getCommentsByUserId(userId, includeCategories);
 
-            return res.json(comments);
+            return returnSuccess.successFetch(res, comments, 'Successfully fetched comments');
 
         } catch (err) {
             return returnError.internalError(res, 'Error fetching comments by userId', err);
@@ -23,19 +23,7 @@ class CommentController {
     async postComment (req, res) {
         try {
 
-            const { userId, body, categoryId, keywords, title } = req.body;
 
-            if(!userId) return returnError.loggerWarnUserId(res);
-            if(!body) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'body');
-
-            const newComment = await commentService.createComment({
-                userId,
-                body,
-                categoryId,
-                keywords, title
-            });
-
-            return res.status(201).json(newComment);
 
         } catch(err) {
             return returnError.internalError(res, 'Error creating comment', err);
