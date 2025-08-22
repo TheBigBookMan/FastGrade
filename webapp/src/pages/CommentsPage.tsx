@@ -14,7 +14,7 @@ const CommentsPage = () => {
     const { user } = useAuth();
     if (!user) return null;
 
-    const { data: comments, isLoading: commentsLoading, error: commentsError } = useComments(user.id, true);
+    const { data: comments, isLoading: commentsLoading, error: commentsError } = useComments(user.id, false);
     const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories(user.id);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
