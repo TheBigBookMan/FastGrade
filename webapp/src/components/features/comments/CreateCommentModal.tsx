@@ -4,6 +4,7 @@ import Input from "../../common/layout/Input.tsx";
 import { Category } from "../../../types/categoryTypes.ts";
 import { toast } from "sonner";
 import { useCreateComment } from "../../../hooks/useComment.ts";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 interface CreateCommentModalProps {
     isOpen: boolean;
@@ -24,10 +25,15 @@ const CreateCommentModal = ({
     const [formData, setFormData] = useState({
         title: "",
         body: "",
-        categoryId: preselectedCategoryId || ""
+        categoryId: preselectedCategoryId || "",
+        isFavourite: false
     });
 
     if (!isOpen) return null;
+
+    const toggleFavorite = () => {
+        setFormData(prev => ({ ...prev, isFavourite: !prev.isFavourite }));
+    };
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -39,7 +45,6 @@ const CreateCommentModal = ({
         }
 
         try {
-
             const response = await mutateAsync({
                 ...formData,
                 userId
@@ -47,7 +52,7 @@ const CreateCommentModal = ({
 
             if(response.success) {
                 toast.success('Comment successfully created');
-                setFormData({ title: "", body: "", categoryId: preselectedCategoryId || "" });
+                setFormData({ title: "", body: "", categoryId: preselectedCategoryId || "", isFavourite: false });
                 onClose();
             } else {
                 toast.error(response.message || 'Failed to create comment');
@@ -101,6 +106,28 @@ const CreateCommentModal = ({
                             </select>
                         </div>
                     )}
+
+                    {/* Favorite Toggle */}
+                    <button
+                        type="button"
+                        onClick={toggleFavorite}
+                        className="p-2 hover:bg-secondary-100 rounded-lg transition-all duration-200 ease-in-out flex items-center gap-2"
+                        aria-label={formData.isFavourite ? "Remove from favorites" : "Add to favorites"}
+                    >
+                        {formData.isFavourite ? (
+                            <FaHeart 
+                                className="w-5 h-5 text-red-500 animate-bounce" 
+                            />
+                        ) : (
+                            <FaRegHeart 
+                                className="w-5 h-5 text-secondary-400 hover:text-red-400 transition-all duration-200 ease-in-out transform hover:scale-110" 
+                            />
+                        )}
+
+                        <span className="text-sm text-secondary-600">
+                            {formData.isFavourite ? "Added to favorites" : "Add to favorites"}
+                        </span>
+                    </button>
                     
                     <div className="flex gap-3 pt-4">
                         <Button
@@ -115,8 +142,9 @@ const CreateCommentModal = ({
                             type="submit"
                             variant="primary"
                             fullWidth
+                            disabled={isPending}
                         >
-                            Create Comment
+                            {isPending ? "Creating..." : "Create Comment"}
                         </Button>
                     </div>
                 </form>
