@@ -40,7 +40,7 @@ const CommentAccordion = ({
                             ) : (
                                 <MdExpandMore className="w-5 h-5 text-secondary-500" />
                             )}
-                            <div>
+                            <div className="flex flex-col items-start">
                                 <h3 className="text-lg font-semibold text-secondary-900">
                                     {category.name}
                                 </h3>
