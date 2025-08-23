@@ -29,9 +29,9 @@ const CommentAccordion = ({
         <>
             <div className="border-b border-secondary-200 last:border-b-0">
                 {/* Category Header */}
-                <button
+                <div
                     onClick={onToggle}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-secondary-50 transition-colors"
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-secondary-50 transition-colors hover:cursor-pointer"
                 >
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ const CommentAccordion = ({
                             </button>
                         )}
                     </div>
-                </button>
+                </div>
 
                 {/* Comments Section */}
                 <div 
