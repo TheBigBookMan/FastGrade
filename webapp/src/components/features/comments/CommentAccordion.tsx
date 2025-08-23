@@ -11,6 +11,7 @@ interface CommentAccordionProps {
     isExpanded: boolean;
     onToggle: () => void;
     userId: string;
+    allCategories: Category[];
 }
 
 const CommentAccordion = ({ 
@@ -18,7 +19,8 @@ const CommentAccordion = ({
     comments, 
     isExpanded, 
     onToggle, 
-    userId 
+    userId,
+    allCategories
 }: CommentAccordionProps) => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -87,6 +89,7 @@ const CommentAccordion = ({
                                         comment={comment}
                                         category={category}
                                         userId={userId}
+                                        allCategories={allCategories}
                                     />
                                 ))}
                             </div>

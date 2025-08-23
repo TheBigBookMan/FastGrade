@@ -123,6 +123,7 @@ const CommentsPage = () => {
                                     isExpanded={expandedCategories.has(category.id)}
                                     onToggle={() => toggleCategory(category.id)}
                                     userId={user.id}
+                                    allCategories={allCategories}
                                 />
                             ))}
                         </div>

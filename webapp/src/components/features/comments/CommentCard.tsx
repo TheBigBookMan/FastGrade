@@ -10,15 +10,17 @@ interface CommentCardProps {
     comment: Comment;
     category: Category;
     userId: string;
+    allCategories: Category[];
 }
 
-const CommentCard = ({ comment, category, userId }: CommentCardProps) => {
+const CommentCard = ({ comment, category, userId, allCategories }: CommentCardProps) => {
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editData, setEditData] = useState({
         title: comment.title || '',
-        body: comment.body
+        body: comment.body,
+        categoryId: category.id || ''
     });
 
     const handleDelete = async () => {
@@ -47,7 +49,8 @@ const CommentCard = ({ comment, category, userId }: CommentCardProps) => {
     const handleCancel = () => {
         setEditData({
             title: comment.title || '',
-            body: comment.body
+            body: comment.body,
+            categoryId: category.id || ''
         });
         setIsEditing(false);
     };
@@ -85,6 +88,26 @@ const CommentCard = ({ comment, category, userId }: CommentCardProps) => {
                             className="text-sm"
                             fullWidth
                         />
+                        {/* Category Dropdown */}
+                        <div>
+                            <label className="block text-sm font-medium text-secondary-700 mb-2">
+                                Category
+                            </label>
+                            <select
+                                value={editData.categoryId}
+                                onChange={(e) => setEditData(prev => ({ ...prev, categoryId: e.target.value }))}
+                                className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-sm"
+                            >
+                                <option value="">No category</option>
+                                {allCategories
+                                    .filter(cat => cat.id !== 'other') // Exclude "Other" category
+                                    .map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
                         <div className="flex gap-2 justify-end">
                             <button
                                 onClick={handleCancel}
