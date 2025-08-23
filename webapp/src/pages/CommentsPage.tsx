@@ -39,9 +39,10 @@ const CommentsPage = () => {
 
     // Create "Other" category for uncategorized comments
     const allCategories = useMemo(() => {
-        const categoryList: Category[] = categories || [];
+        // Filter out any existing "other" categories to prevent duplicates
+        const categoryList: Category[] = (categories || []).filter(cat => cat.id !== 'other');
         
-        // Add "Other" category if there are uncategorized comments
+        // Only add "Other" category if there are uncategorized comments
         if (commentsByCategory['other'] && commentsByCategory['other'].length > 0) {
             const otherCategory: Category = {
                 id: 'other',
