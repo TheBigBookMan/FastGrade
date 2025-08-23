@@ -3,11 +3,11 @@ version: "3.9"
 services:
   mysql:
     image: mysql:8
-    container_name: fastgrade-mysql
+    container_name: quicknote-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fastgrade
+      MYSQL_DATABASE: quicknote
       MYSQL_ROOT_HOST: '%'
     ports:
       - "3307:3306"
@@ -16,13 +16,13 @@ services:
 
   api:
     build: ./api
-    container_name: fastgrade-api
+    container_name: quicknote-api
     ports:
       - "5001:5000"
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://root:root@mysql:3306/fastgrade
+      DATABASE_URL: mysql://root:root@mysql:3306/quicknote
       NODE_ENV: development
     volumes:
       - ./api:/app                  # live-edit your code
@@ -34,7 +34,7 @@ services:
 
   webapp:
     build: ./webapp
-    container_name: fastgrade-webapp
+    container_name: quicknote-webapp
     ports:
       - "5174:5173"                 # host:container
     depends_on:

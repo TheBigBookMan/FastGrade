@@ -9,7 +9,7 @@ const DashboardPage = () => {
                 <div className="px-4 py-6 sm:px-0">
                     <h2 className="text-2xl font-bold mb-4 text-secondary-900">Dashboard</h2>
                     <p className="text-secondary-600">
-                        Welcome to FastGrade! This is your dashboard.
+                        Welcome to QuickNote! This is your dashboard.
                     </p>
                     
                     <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

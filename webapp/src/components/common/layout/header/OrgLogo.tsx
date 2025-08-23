@@ -5,11 +5,11 @@ interface OrgLogoProps {
 }
 
 const OrgLogo = ({ className = "" }: OrgLogoProps) => {
-    const orgName = "FastGrade";
+    const orgName = "QuickNote";
     return (
         <NavLink to="/" className={`flex items-center ${className}`}>
             <h1 className="text-2xl font-bold text-primary-600">
-                FastGrade
+                QuickNote
             </h1>
         </NavLink>
     );

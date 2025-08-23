@@ -50,7 +50,7 @@ const LoginPage = () => {
                 <div className="absolute inset-0 bg-black opacity-20"></div>
                 <div className="relative z-10 flex flex-col justify-center items-center text-white px-12">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold mb-4">FastGrade</h1>
+                        <h1 className="text-4xl font-bold mb-4">QuickNote</h1>
                         <p className="text-xl text-primary-100 mb-8">
                             Streamline your grading process with intelligent feedback
                         </p>
@@ -83,7 +83,7 @@ const LoginPage = () => {
                 <div className="max-w-md w-full space-y-8">
                     {/* Mobile logo */}
                     <div className="lg:hidden text-center">
-                        <h1 className="text-3xl font-bold text-primary-600">FastGrade</h1>
+                        <h1 className="text-3xl font-bold text-primary-600">QuickNote</h1>
                     </div>
 
                     <div>
