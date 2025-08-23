@@ -11,14 +11,14 @@ class CommentService {
         });
     }
 
-    async createComment(userId, title, body, categoryId, keywords) {
+    async createComment(userId, title, body, categoryId, isFavourite) {
         return prisma.comment.create({
             data: {
                 userId,
                 title,
                 body,
                 categoryId,
-                keywords
+                isFavourite
             }
         });
     }
