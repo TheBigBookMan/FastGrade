@@ -21,7 +21,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>({
         id: 'cmenmlrs10000nfcnaeclyq4o',
-        email: 'tests@test.com'
+        email: 'test@test.com'
     });
 
     const login = async (email: string, password: string) => {
