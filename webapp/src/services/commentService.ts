@@ -11,6 +11,11 @@ class CommentService {
         const response = await api.get(`/comment/${userId}?includeCategories=${includeCategories}`);
         return response.data;
     }
+
+    async updateComment(userId: string, commentId: string, data: Partial<CommentData>): Promise<CommentResponse> {
+        const response = await api.put(`/comment/${commentId}/user/${userId}`, data);
+        return response.data;
+    }
 }
 
 export default new CommentService();
