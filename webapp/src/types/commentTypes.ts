@@ -25,3 +25,7 @@ export interface CommentData {
     userId: string;
     categoryId: string;
 }
+
+export interface EditCommentData extends CommentData {
+    commentId: string;
+}
