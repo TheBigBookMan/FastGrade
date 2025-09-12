@@ -5,6 +5,7 @@ import { Category } from "../../../types/categoryTypes.ts";
 import { toast } from "sonner";
 import Input from "../../common/layout/Input.tsx";
 import ConfirmationModal from "../../common/layout/ConfirmationModal.tsx";
+import { useUpdateComment } from "../../../hooks/useComment.ts";
 
 interface CommentCardProps {
     comment: Comment;
@@ -14,6 +15,7 @@ interface CommentCardProps {
 }
 
 const CommentCard = ({ comment, category, userId, allCategories }: CommentCardProps) => {
+    const {mutateAsync, isPending} = useUpdateComment(userId, comment.id);
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -35,15 +37,33 @@ const CommentCard = ({ comment, category, userId, allCategories }: CommentCardPr
         setShowMenu(false);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
+
         if (!editData.body.trim()) {
             toast.error('Comment body is required');
             return;
         }
 
-        // Mock save - just show success message
-        toast.success('Comment updated successfully');
-        setIsEditing(false);
+        try {
+
+            const response = await mutateAsync({
+                ...editData,
+                userId,
+                commentId: comment.id
+            });
+
+            if(response.success) {
+                toast.success('Comment successfully updated');
+                setIsEditing(false);
+            } else {
+                toast.error(response.message || 'Failed to update comment');
+            }
+
+        } catch(err: any) {
+            toast.error(err.message || 'Failed to update comment');
+            console.error('Network / Technical error', err);
+        }
     };
 
     const handleCancel = () => {
