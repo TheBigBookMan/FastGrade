@@ -1,5 +1,5 @@
 import { api } from "../utils/api";
-import { CommentResponse, CommentData } from "../types/commentTypes";
+import { CommentResponse, CommentData, EditCommentData } from "../types/commentTypes";
 
 class CommentService {
     async createComment(data: CommentData): Promise<CommentResponse> {
@@ -12,7 +12,7 @@ class CommentService {
         return response.data;
     }
 
-    async updateComment(userId: string, commentId: string, data: Partial<CommentData>): Promise<CommentResponse> {
+    async updateComment(userId: string, commentId: string, data: Partial<EditCommentData>): Promise<CommentResponse> {
         const response = await api.put(`/comment/${commentId}/user/${userId}`, data);
         return response.data;
     }
