@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import commentService from "../services/commentService";
-import { CommentData } from "../types/commentTypes";
+import { CommentData, EditCommentData } from "../types/commentTypes";
 
 // Query keys
 export const commentKeys = {
@@ -28,6 +28,18 @@ export const useComments = (userId: string, includeCategories: boolean) => {
         queryFn: async () => {
             const response = await commentService.getComments(userId, includeCategories);
             return response.data || null;
+        }
+    })
+}
+
+export const useUpdateComment = (userId: string, commentId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: Partial<EditCommentData>) => commentService.updateComment(userId, commentId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: commentKeys.list(userId)});
+            queryClient.invalidateQueries({ queryKey: commentKeys.detail(commentId)});
         }
     })
 }
