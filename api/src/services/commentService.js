@@ -30,10 +30,16 @@ class CommentService {
     }
 
     async updateCommentByUserId (userId, commentId, updatedComment) {
+        const {title, body, categoryId } = updatedComment;
+        
         return prisma.comment.update({
-            where: {commentId, userId},
+            where: {id: commentId, userId},
             data: { 
-                ...updatedComment, 
+                title,
+                body,
+                category: {
+                    connect: { id: categoryId }
+                },
                 updatedAt: new Date() 
             }
         });
