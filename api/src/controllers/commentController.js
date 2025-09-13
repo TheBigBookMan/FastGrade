@@ -61,19 +61,36 @@ class CommentController {
         }
     }
 
-    async updateCommentByUserId (req, res) {
+    async updateComment (req, res) {
         try {
             const { userId, commentId } = req.params;
 
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
 
-            const updatedComment = await commentService.updateCommentByUserId(userId, commentId, req.body);
+            const updatedComment = await commentService.updateComment(userId, commentId, req.body);
 
             return returnSuccess.successUpdate(res, 'Successfully updated comment', updatedComment);
         }
         catch (err) {
             return returnError.internalError(res, 'Error updating comment', err);
+        }
+    }
+
+    async deleteComment (req, res) {
+        try {
+
+            const { userId, commentId } = req.params;
+            
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
+
+            await commentService.deleteComment(userId, commentId);
+
+            return returnSuccess.successDelete(res, 'Successfully deleted comment');
+
+        } catch (err) {
+            return returnError.internalError(res, 'Error deleting comment', err);
         }
     }
 }
