@@ -25,7 +25,7 @@ class CommentService {
 
     async getCommentByUserId (userId, commentId) {
         return prisma.comment.findUnique({
-            where: {commentId, userId}
+            where: {id: commentId, userId}
         });
     }
 
