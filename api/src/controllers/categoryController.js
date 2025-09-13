@@ -90,7 +90,9 @@ class CategoryController {
     
             if(!category) return returnError.notFound(res, 'Category');
     
-            await categoryService.deleteCategory(categoryId, userId);
+            const response = await categoryService.deleteCategory(categoryId, userId);
+
+            if(!response) return returnError.internalError(res, 'Error deleting category');
     
             return returnSuccess.successDelete(res, 'Successfully deleted category');
     
