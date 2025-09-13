@@ -29,7 +29,7 @@ class CommentService {
         });
     }
 
-    async updateCommentByUserId (userId, commentId, updatedComment) {
+    async updateComment (userId, commentId, updatedComment) {
         const {title, body, categoryId } = updatedComment;
         
         return prisma.comment.update({
@@ -42,6 +42,12 @@ class CommentService {
                 },
                 updatedAt: new Date() 
             }
+        });
+    }
+
+    async deleteComment(commentId, userId) {
+        return prisma.comment.deleteMany({
+            where: { id: commentId, userId }
         });
     }
 }
