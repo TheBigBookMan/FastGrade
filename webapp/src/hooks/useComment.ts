@@ -55,3 +55,15 @@ export const useDeleteComment = (userId: string, commentId: string) => {
         }
     })
 }
+
+export const useUpdateFavouriteComment = (userId: string, commentId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (favourite: boolean) => commentService.updateCommentFavourite(userId, commentId, favourite),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: commentKeys.list(userId)});
+            queryClient.invalidateQueries({ queryKey: commentKeys.detail(commentId)});
+        }
+    })
+}
