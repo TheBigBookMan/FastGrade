@@ -21,6 +21,11 @@ class CommentService {
         const response = await api.delete(`/comment/${commentId}/user/${userId}`);
         return response.data;
     }
+
+    async updateCommentFavourite(userId: string, commentId: string, favourite: boolean): Promise<CommentResponse> {
+        const response = await api.put(`/comment/${commentId}/user/${userId}/favourite`, { favourite });
+        return response.data;
+    }
 }
 
 export default new CommentService();
