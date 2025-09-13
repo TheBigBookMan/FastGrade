@@ -5,7 +5,7 @@ import { Category } from "../../../types/categoryTypes.ts";
 import { toast } from "sonner";
 import Input from "../../common/layout/Input.tsx";
 import ConfirmationModal from "../../common/layout/ConfirmationModal.tsx";
-import { useUpdateComment } from "../../../hooks/useComment.ts";
+import { useUpdateComment, useDeleteComment } from "../../../hooks/useComment.ts";
 
 interface CommentCardProps {
     comment: Comment;
@@ -16,6 +16,7 @@ interface CommentCardProps {
 
 const CommentCard = ({ comment, category, userId, allCategories }: CommentCardProps) => {
     const {mutateAsync, isPending} = useUpdateComment(userId, comment.id);
+    const {mutateAsync: deleteMutateAsync, isPending: isDeletePending} = useDeleteComment(userId, comment.id);
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -25,11 +26,26 @@ const CommentCard = ({ comment, category, userId, allCategories }: CommentCardPr
         categoryId: category.id || ''
     });
 
-    const handleDelete = async () => {
-        // Mock delete - just show success message
-        toast.success('Comment deleted successfully');
-        setShowMenu(false);
-        setShowDeleteConfirm(false);
+    const handleDelete = async (): Promise<void> => {
+        try {
+
+            const response = await deleteMutateAsync();
+
+            if(!response.success) {
+                toast.error(response.message || 'Failed to delete comment');
+            } else {
+                toast.success('Comment deleted successfully');
+            }
+            setShowMenu(false);
+            setShowDeleteConfirm(false);
+            
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to delete comment');
+            console.error('Network / Technical error', err);
+            setShowMenu(false);
+            setShowDeleteConfirm(false);
+            return;
+        }
     };
 
     const handleEdit = () => {
