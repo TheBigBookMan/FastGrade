@@ -43,3 +43,15 @@ export const useUpdateComment = (userId: string, commentId: string) => {
         }
     })
 }
+
+export const useDeleteComment = (userId: string, commentId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => commentService.deleteComment(userId, commentId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: commentKeys.list(userId)});
+            queryClient.invalidateQueries({ queryKey: commentKeys.detail(commentId)});
+        }
+    })
+}
