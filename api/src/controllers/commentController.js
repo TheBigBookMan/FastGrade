@@ -97,6 +97,24 @@ class CommentController {
             return returnError.internalError(res, 'Error deleting comment', err);
         }
     }
+
+    async updateCommentFavourite (req, res) {
+        try {
+            const { userId, commentId } = req.params;
+            const { favourite } = req.body;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
+            if(favourite === undefined) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'favourite');
+
+            const updatedComment = await commentService.updateCommentFavourite(userId, commentId, favourite);
+
+            return returnSuccess.successUpdate(res, 'Successfully updated comment favourite status', updatedComment);
+        }
+        catch (err) {
+            return returnError.internalError(res, 'Error updating comment favourite status', err);
+        }
+    }
 }
 
 export default new CommentController();
