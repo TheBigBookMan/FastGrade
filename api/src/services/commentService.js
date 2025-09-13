@@ -50,6 +50,16 @@ class CommentService {
             where: { id: commentId, userId }
         });
     }
+
+    async updateCommentFavourite (userId, commentId, isFavourite) {
+        return prisma.comment.update({
+            where: {id: commentId, userId},
+            data: { 
+                isFavourite,
+                updatedAt: new Date() 
+            }
+        });
+    }
 }
 
 export default new CommentService();
