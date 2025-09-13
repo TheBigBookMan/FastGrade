@@ -5,7 +5,7 @@ import { Category } from "../../../types/categoryTypes.ts";
 import { toast } from "sonner";
 import Input from "../../common/layout/Input.tsx";
 import ConfirmationModal from "../../common/layout/ConfirmationModal.tsx";
-import { useUpdateComment, useDeleteComment } from "../../../hooks/useComment.ts";
+import { useUpdateComment, useDeleteComment, useUpdateFavouriteComment } from "../../../hooks/useComment.ts";
 
 interface CommentCardProps {
     comment: Comment;
@@ -17,6 +17,7 @@ interface CommentCardProps {
 const CommentCard = ({ comment, category, userId, allCategories }: CommentCardProps) => {
     const {mutateAsync, isPending} = useUpdateComment(userId, comment.id);
     const {mutateAsync: deleteMutateAsync, isPending: isDeletePending} = useDeleteComment(userId, comment.id);
+    const {mutateAsync: mutateFavouriteAsync, isPending: isFavouritePending} = useUpdateFavouriteComment(userId, comment.id);
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -97,8 +98,23 @@ const CommentCard = ({ comment, category, userId, allCategories }: CommentCardPr
     };
 
     const toggleFavorite = async () => {
-        // Mock favorite toggle - just show success message
-        toast.success(comment.isFavourite ? 'Removed from favorites' : 'Added to favorites');
+
+        try {
+
+            const response = await mutateFavouriteAsync(!comment.isFavourite);
+
+            if(!response.success) {
+                toast.error(response.message || 'Failed to update favorite status');
+                return;
+            } else {
+                toast.success(comment.isFavourite ? 'Removed from favorites' : 'Added to favorites');
+            }
+
+        } catch(err: any) {
+            toast.error(err.message || 'Failed to update favorite status');
+            console.error('Network / Technical error', err);
+            return;
+        }
     };
 
     return (
