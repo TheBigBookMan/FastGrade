@@ -85,6 +85,10 @@ class CommentController {
             if(!userId) return returnError.loggerWarnUserId(res);
             if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'comment', 'commentId');
 
+            const comment = await commentService.getCommentByUserId(userId, commentId);
+
+            if(!comment) return returnError.notFound(res, 'Comment');
+
             await commentService.deleteComment(userId, commentId);
 
             return returnSuccess.successDelete(res, 'Successfully deleted comment');
