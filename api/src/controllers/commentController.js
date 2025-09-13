@@ -55,7 +55,7 @@ class CommentController {
 
             const comment = await commentService.getCommentByUserId(userId, commentId);
 
-            return res.json(comment);
+            return res.successFetch(res, 'Successfully fetched comment', comment);
         } catch(err) {
             return returnError.internalError(res, 'Error fetching comments', err);
         }
