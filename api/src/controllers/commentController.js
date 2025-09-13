@@ -55,7 +55,7 @@ class CommentController {
 
             const comment = await commentService.getCommentByUserId(userId, commentId);
 
-            return res.successFetch(res, 'Successfully fetched comment', comment);
+            return returnSuccess.successFetch(res, 'Successfully fetched comment', comment);
         } catch(err) {
             return returnError.internalError(res, 'Error fetching comments', err);
         }
@@ -70,7 +70,7 @@ class CommentController {
 
             const updatedComment = await commentService.updateCommentByUserId(userId, commentId, req.body);
 
-            return res.json(updatedComment);
+            return returnSuccess.successUpdate(res, 'Successfully updated comment', updatedComment);
         }
         catch (err) {
             return returnError.internalError(res, 'Error updating comment', err);
