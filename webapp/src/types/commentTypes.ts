@@ -29,3 +29,7 @@ export interface CommentData {
 export interface EditCommentData extends CommentData {
     commentId: string;
 }
+
+export interface FavouriteCommentData extends Partial<Comment> {
+    favourite: boolean;
+}
