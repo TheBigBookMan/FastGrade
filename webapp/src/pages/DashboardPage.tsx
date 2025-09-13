@@ -62,7 +62,7 @@ const DashboardPage = () => {
                                     <div className="ml-5 w-0 flex-1">
                                         <dl>
                                             <dt className="text-sm font-medium text-secondary-500 truncate">
-                                                Rubrics
+                                                Attachments
                                             </dt>
                                             <dd className="text-lg font-medium text-secondary-900">
                                                 0

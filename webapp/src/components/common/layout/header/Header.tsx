@@ -11,7 +11,7 @@ const Header = () => {
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Comments', path: '/comments' },
         { name: 'Categories', path: '/categories' },
-        { name: 'Rubrics', path: '/rubrics' },
+        { name: 'Attachments', path: '/attachments' },
         { name: 'Feedback', path: '/feedback' },
     ];
 

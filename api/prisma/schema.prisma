@@ -18,7 +18,7 @@ model User {
     email      String     @unique
     comments   Comment[]
     categories Category[]
-    Rubric Rubric[]
+    Attachment Attachment[]
     createdAt  DateTime   @default(now())
     updatedAt  DateTime   @updatedAt
 
@@ -97,7 +97,7 @@ model Category {
     @@index([userId])
 }
 
-model Rubric {
+model Attachment {
     id String @id @default(cuid())
     name String
     description String?

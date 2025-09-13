@@ -5,7 +5,7 @@ import { ProtectedRoute } from './components/common/auth/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import CommentsPage from './pages/CommentsPage';
 import CategoriesPage from './pages/CategoriesPage';
-import RubricsPage from './pages/RubricsPage';
+import AttachmentsPage from './pages/AttachmentsPage';
 import FeedbackPage from './pages/FeedbackPage';
 import SettingsPage from './pages/SettingsPage';
 import { Toaster } from 'sonner';
@@ -20,7 +20,7 @@ function App() {
 					<Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 					<Route path="/comments" element={<ProtectedRoute><CommentsPage /></ProtectedRoute>} />
 					<Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
-					<Route path="/rubrics" element={<ProtectedRoute><RubricsPage /></ProtectedRoute>} />
+					<Route path="/attachments" element={<ProtectedRoute><AttachmentsPage /></ProtectedRoute>} />
 					<Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
 					<Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 

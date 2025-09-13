@@ -1,6 +1,6 @@
 import Header from "../components/common/layout/header/Header";
 
-const RubricsPage = () => {
+const AttachmentsPage = () => {
     return (
         <div className="min-h-screen bg-secondary-50">
             <Header />
@@ -8,4 +8,4 @@ const RubricsPage = () => {
     )
 }
 
-export default RubricsPage;
+export default AttachmentsPage;

@@ -1,16 +1,16 @@
 import prisma from "../utils/prisma.js";
 
-class RubricService {
-    async fetchRubricsByUserId (userId) {
-        return prisma.rubric.findMany({
+class AttachmentService {
+    async fetchAttachmentsByUserId (userId) {
+        return prisma.attachment.findMany({
             where: {userId},
             orderBy: {createdAt: 'desc'},
             
         });
     }
 
-    async createRubric (userId, name, description, imageURL) {
-        return prisma.rubric.create({
+    async createAttachment (userId, name, description, imageURL) {
+        return prisma.attachment.create({
             data: {
                 userId,
                 name,
@@ -20,11 +20,11 @@ class RubricService {
         });
     }
 
-    async getRubricByUserId (userId, rubricId) {
-        return prisma.rubric.findUnique({
-            where: {userId, rubricId}
+    async getAttachmentByUserId (userId, attachmentId) {
+        return prisma.attachment.findUnique({
+            where: {userId, attachmentId}
         });
     }
 }
 
-export default new RubricService();
+export default new AttachmentService();
