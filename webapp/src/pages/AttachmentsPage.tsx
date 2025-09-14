@@ -3,6 +3,7 @@ import Header from "../components/common/layout/header/Header";
 import AttachmentGrid from "../components/features/attachments/AttachmentGrid";
 import UploadAttachmentModal from "../components/features/attachments/UploadAttachmentModal";
 import ImagePreviewModal from "../components/features/attachments/ImagePreviewModal";
+import SearchAndFilter from "../components/features/attachments/SearchAndFilter";
 import LoadingSpinner from "../components/common/layout/LoadingSpinner";
 import ErrorState from "../components/common/layout/ErrorState";
 import { Attachment } from "../types/attachmentTypes.ts";
@@ -85,13 +86,46 @@ const AttachmentsPage = () => {
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Search and filter state
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedFileType, setSelectedFileType] = useState("");
 
-    // Sort attachments by creation date (newest first)
-    const sortedAttachments = useMemo(() => {
-        return [...attachments].sort((a, b) => 
+    // Filter and sort attachments
+    const filteredAndSortedAttachments = useMemo(() => {
+        let filtered = [...attachments];
+
+        // Apply search filter
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            filtered = filtered.filter(attachment =>
+                attachment.originalName.toLowerCase().includes(searchLower) ||
+                attachment.name.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // Apply file type filter
+        if (selectedFileType) {
+            filtered = filtered.filter(attachment => {
+                switch (selectedFileType) {
+                    case 'image':
+                        return attachment.mimeType.startsWith('image/');
+                    case 'pdf':
+                        return attachment.mimeType === 'application/pdf';
+                    case 'other':
+                        return !attachment.mimeType.startsWith('image/') && 
+                               attachment.mimeType !== 'application/pdf';
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // Sort by creation date (newest first)
+        return filtered.sort((a, b) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-    }, [attachments]);
+    }, [attachments, searchTerm, selectedFileType]);
 
     const handleUpload = async (file: File, name: string) => {
         setIsLoading(true);
@@ -195,60 +229,22 @@ const AttachmentsPage = () => {
                         Upload File
                     </button>
                 </div>
+                    
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white rounded-lg p-4 border border-secondary-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary-100 rounded-lg">
-                                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary-600">Total Files</p>
-                                <p className="text-2xl font-semibold text-secondary-900">{attachments.length}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg p-4 border border-secondary-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-info-100 rounded-lg">
-                                <svg className="w-5 h-5 text-info-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary-600">Images</p>
-                                <p className="text-2xl font-semibold text-secondary-900">
-                                    {attachments.filter(att => att.mimeType.startsWith('image/')).length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg p-4 border border-secondary-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-secondary-100 rounded-lg">
-                                <svg className="w-5 h-5 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-sm text-secondary-600">Documents</p>
-                                <p className="text-2xl font-semibold text-secondary-900">
-                                    {attachments.filter(att => att.mimeType === 'application/pdf').length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Search and Filter */}
+                <SearchAndFilter
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    selectedFileType={selectedFileType}
+                    onFileTypeChange={setSelectedFileType}
+                    totalCount={attachments.length}
+                    filteredCount={filteredAndSortedAttachments.length}
+                />
 
                 {/* Attachments Grid */}
                 <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
                     <AttachmentGrid
-                        attachments={sortedAttachments}
+                        attachments={filteredAndSortedAttachments}
                         onPreview={handlePreview}
                         onDelete={handleDelete}
                     />
