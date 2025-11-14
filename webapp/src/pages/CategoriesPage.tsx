@@ -20,11 +20,11 @@ const CategoriesPage = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-    useEffect(() => {
-        if (!hasUnsavedChanges) {
+    useEffect((): void => {
+        if (isLoading || hasUnsavedChanges) return;
+
         setLocalCategories(apiCategories);
-        }
-    }, [apiCategories, hasUnsavedChanges]);
+    }, [apiCategories, isLoading, hasUnsavedChanges]);
 
     const handleOrderChange = (newOrder: Category[]): void => {
         const updatedOrder = newOrder.map((category, index) => ({
@@ -36,7 +36,7 @@ const CategoriesPage = () => {
         setHasUnsavedChanges(true);
     };
 
-    const handleSaveOrder = async () => {
+    const handleSaveOrder = async (): Promise<void> => {
         try {
             const categoryIds = localCategories.map(cat => cat.id);
             const response = await updateCategoryOrder.mutateAsync({
