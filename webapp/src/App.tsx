@@ -10,6 +10,8 @@ import FeedbackPage from './pages/FeedbackPage';
 import SettingsPage from './pages/SettingsPage';
 import { Toaster } from 'sonner';
 
+// TODO need to make this all semantic elements for accessibility- big part
+
 function App() {
     return (
 		<AuthProvider>

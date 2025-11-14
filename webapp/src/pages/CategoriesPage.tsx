@@ -21,10 +21,12 @@ const CategoriesPage = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     useEffect(() => {
+        if (!hasUnsavedChanges) {
         setLocalCategories(apiCategories);
-    }, [apiCategories]);
+        }
+    }, [apiCategories, hasUnsavedChanges]);
 
-    const handleOrderChange = (newOrder: Category[]) => {
+    const handleOrderChange = (newOrder: Category[]): void => {
         const updatedOrder = newOrder.map((category, index) => ({
             ...category,
             order: index + 1
