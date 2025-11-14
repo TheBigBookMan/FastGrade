@@ -1,4 +1,4 @@
-import { MdTrendingUp, MdClose } from "react-icons/md";
+import { MdTrendingUp } from "react-icons/md";
 import { Comment } from "../../../types/commentTypes";
 import { Category } from "../../../types/categoryTypes";
 
