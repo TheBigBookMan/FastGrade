@@ -20,9 +20,9 @@ const DashboardPage = () => {
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Tiles apiCategories={apiCategories} categoriesLoad={categoriesLoad} apiComments={apiComments} commentsLoad={commentsLoad} />
 
-                <FavouriteComments apiComments={apiComments} />
+                <FavouriteComments apiComments={apiComments} apiCategories={apiCategories} />
                 
-                <MostUsedComments apiComments={apiComments} />
+                <MostUsedComments apiComments={apiComments} apiCategories={apiCategories} />
             </main>
         </div>
     );

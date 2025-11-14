@@ -119,7 +119,7 @@ const CommentCard = ({ comment, category, userId, allCategories }: CommentCardPr
 
     return (
         <>
-            <div className="bg-secondary-50 rounded-lg p-4 border border-secondary-200 hover:border-secondary-300 transition-colors">
+            <div className="bg-secondary-50 rounded-lg p-4 border border-secondary-200 hover:border-secondary-300 transition-colors z-40">
                 {isEditing ? (
                     <div className="space-y-3">
                         <Input
@@ -217,7 +217,7 @@ const CommentCard = ({ comment, category, userId, allCategories }: CommentCardPr
                                     </button>
                                     
                                     {showMenu && (
-                                        <div className="absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                                        <div className="absolute right-0 top-full mt-1 bg-white border border-secondary-200 rounded-lg shadow-lg py-1 z-50 min-w-[120px]">
                                             <button
                                                 onClick={handleEdit}
                                                 className="w-full px-3 py-2 text-left hover:bg-secondary-50 flex items-center gap-2 text-sm"

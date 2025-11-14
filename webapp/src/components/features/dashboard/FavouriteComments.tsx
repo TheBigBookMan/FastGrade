@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MdFavorite, MdClose } from "react-icons/md";
 import { Comment } from "../../../types/commentTypes";
+import { Category } from "../../../types/categoryTypes";
 import { useUpdateFavouriteComment } from "../../../hooks/useComment";
 import { useAuth } from "../../../contexts/AuthContext";
 import { toast } from "sonner";
@@ -8,13 +9,15 @@ import LoadingSpinner from "../../common/layout/LoadingSpinner";
 
 interface FavouriteCommentsInterface {
     apiComments: Comment[];
+    apiCategories: Category[];
 }
 
 interface FavouriteCommentRowProps {
     comment: Comment;
+    categories: Category[];
 }
 
-const FavouriteCommentRow = ({ comment }: FavouriteCommentRowProps) => {
+const FavouriteCommentRow = ({ comment, categories }: FavouriteCommentRowProps) => {
     const { user } = useAuth();
     const [isRemoving, setIsRemoving] = useState(false);
     const { mutateAsync: mutateFavouriteAsync } = useUpdateFavouriteComment(user?.id || '', comment.id);
@@ -40,6 +43,8 @@ const FavouriteCommentRow = ({ comment }: FavouriteCommentRowProps) => {
         }
     };
 
+    const categoryName = categories.find(c => c.id === comment.categoryId)?.name || '-';
+
     return (
         <tr className="hover:bg-secondary-50 transition-colors">
             <td className="px-6 py-4 whitespace-nowrap">
@@ -50,6 +55,9 @@ const FavouriteCommentRow = ({ comment }: FavouriteCommentRowProps) => {
                 ) : (
                     <span className="text-sm text-secondary-400">-</span>
                 )}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+                <span className="text-sm text-secondary-600">{categoryName}</span>
             </td>
             <td className="px-6 py-4">
                 <span className="text-sm text-secondary-700 line-clamp-2">
@@ -90,7 +98,7 @@ const FavouriteCommentRow = ({ comment }: FavouriteCommentRowProps) => {
     );
 };
 
-const FavouriteComments = ({ apiComments }: FavouriteCommentsInterface) => {
+const FavouriteComments = ({ apiComments, apiCategories }: FavouriteCommentsInterface) => {
     const favouriteComments = apiComments.filter(comment => comment.isFavourite);
 
     if (favouriteComments.length === 0) {
@@ -113,6 +121,7 @@ const FavouriteComments = ({ apiComments }: FavouriteCommentsInterface) => {
                     <thead className="bg-secondary-50 border-b border-secondary-200">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Title</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Category</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Comment</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Used</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Last Used</th>
@@ -121,7 +130,7 @@ const FavouriteComments = ({ apiComments }: FavouriteCommentsInterface) => {
                     </thead>
                     <tbody className="divide-y divide-secondary-200">
                         {favouriteComments.map((comment) => (
-                            <FavouriteCommentRow key={comment.id} comment={comment} />
+                            <FavouriteCommentRow key={comment.id} comment={comment} categories={apiCategories} />
                         ))}
                     </tbody>
                 </table>

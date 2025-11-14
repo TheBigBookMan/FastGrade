@@ -97,7 +97,7 @@ const CommentAccordion = ({
                             <div className="py-8 text-center">
                                 <p className="text-secondary-500">
                                     {isOtherCategory 
-                                        ? "No uncategorized comments" 
+                                        ? "No uncategorised comments"
                                         : "No comments in this category yet"
                                     }
                                 </p>

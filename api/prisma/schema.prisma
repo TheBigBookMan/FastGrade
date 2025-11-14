@@ -1,150 +1,148 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
-
 
 //UPDATE THE DB AND PRISMA CLIENT
 //npx prisma generate
 //npx prisma db push
 
-
 model User {
-    id         String     @id @default(cuid())
-    email      String     @unique
-    comments   Comment[]
-    categories Category[]
-    Attachment Attachment[]
-    createdAt  DateTime   @default(now())
-    updatedAt  DateTime   @updatedAt
+  id         String       @id @default(cuid())
+  email      String       @unique
+  comments   Comment[]
+  categories Category[]
+  Attachment Attachment[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-    Feedback Feedback[]
+  Feedback Feedback[]
 
-    Tag Tag[]
+  Tag Tag[]
 
-    CommentTag CommentTag[]
+  CommentTag CommentTag[]
 
-    HotkeyMapping HotkeyMapping[]
+  HotkeyMapping HotkeyMapping[]
 
-    Settings Settings[]
+  Settings Settings[]
 }
 
 model Comment {
-    id        String   @id @default(cuid())
-    title String?
-    body      String
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-    category Category? @relation(fields: [categoryId], references: [id])
-    categoryId String?
-    isFavourite Boolean @default(false)
-    order Int @default(0)
-    useCount Int @default(0)
-    lastUsedAt DateTime?
-    keywords Json?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id            String          @id @default(cuid())
+  title         String?
+  body          String          @db.VarChar(1024)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  category      Category?       @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  isFavourite   Boolean         @default(false)
+  order         Int             @default(0)
+  useCount      Int             @default(0)
+  lastUsedAt    DateTime?
+  keywords      Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  CommentTag    CommentTag[]
+  HotkeyMapping HotkeyMapping[]
 
-    @@index([userId])
-    @@index([categoryId])
-    CommentTag CommentTag[]
-    HotkeyMapping HotkeyMapping[]
+  @@index([userId])
+  @@index([categoryId])
 }
 
 model Tag {
-    id        String   @id @default(cuid())
-    userId    String   
-    name      String
-    createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
 
-    // Relations
-    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-    commentTags CommentTag[]
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentTags CommentTag[]
 
-    @@unique([userId, name])
+  @@unique([userId, name])
 }
 
 model CommentTag {
-    commentId String
-    tagId     String
-    userId    String
+  commentId String
+  tagId     String
+  userId    String
 
-    // Relations
-    comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-    tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
-    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([commentId, tagId])
-    @@index([userId, tagId])
+  @@id([commentId, tagId])
+  @@index([userId, tagId])
 }
 
 model Category {
-    id String @id @default(cuid())
-    name String
-    description String?
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-    comments Comment[]
-    order Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  comments    Comment[]
+  order       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-    @@unique([userId, name])
-    @@index([userId])
+  @@unique([userId, name])
+  @@index([userId])
 }
 
 model Attachment {
-    id String @id @default(cuid())
-    name String
-    originalName String
-    fileType String
-    fileSize Int
-    mimeType String
-    description String?
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-    url String
-    thumbnailUrl String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  originalName String
+  fileType     String
+  fileSize     Int
+  mimeType     String
+  description  String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  url          String
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-    @@index([userId])
+  @@index([userId])
 }
 
 model HotkeyMapping {
-    id        String  @id @default(cuid())
-    userId    String
-    commentId String
-    hotkey    String
-    isActive  Boolean @default(true)
+  id        String  @id @default(cuid())
+  userId    String
+  commentId String
+  hotkey    String
+  isActive  Boolean @default(true)
 
-    // Relations
-    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
-    @@unique([userId, hotkey])
+  @@unique([userId, hotkey])
 }
 
 model Feedback {
-    id String @id @default(cuid())
-    title String
-    description String
-    user User @relation(fields: [userId], references: [id])
-    userId String
-    createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime @default(now())
 }
 
 model Settings {
-    id        String   @id @default(cuid())
-    userId    String   @unique
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    settings  Json
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // TODO
@@ -175,4 +173,3 @@ model Settings {
 //   @@id([commentId, rubricCriteriaId])
 //   @@map("comment_rubric_criteria")
 // }
-

@@ -1,46 +1,20 @@
-import { useState } from "react";
 import { MdTrendingUp, MdClose } from "react-icons/md";
 import { Comment } from "../../../types/commentTypes";
-import { useUpdateFavouriteComment } from "../../../hooks/useComment";
-import { useAuth } from "../../../contexts/AuthContext";
-import { toast } from "sonner";
-import LoadingSpinner from "../../common/layout/LoadingSpinner";
+import { Category } from "../../../types/categoryTypes";
 
 interface MostUsedCommentsInterface {
     apiComments: Comment[];
+    apiCategories: Category[];
 }
 
 interface MostUsedCommentRowProps {
     comment: Comment;
     rank: number;
+    categories: Category[];
 }
 
-const MostUsedCommentRow = ({ comment, rank }: MostUsedCommentRowProps) => {
-    const { user } = useAuth();
-    const [isRemoving, setIsRemoving] = useState(false);
-    const { mutateAsync: mutateFavouriteAsync } = useUpdateFavouriteComment(user?.id || '', comment.id);
-
-    const handleToggleFavourite = async () => {
-        if (!user) return;
-
-        setIsRemoving(true);
-        
-        try {
-            const response = await mutateFavouriteAsync(!comment.isFavourite);
-            
-            if (!response.success) {
-                toast.error(response.message || 'Failed to update favorite status');
-            } else {
-                toast.success(comment.isFavourite ? 'Removed from favorites' : 'Added to favorites');
-            }
-        } catch (err: any) {
-            toast.error(err.message || 'Failed to update favorite status');
-            console.error('Error updating favorite:', err);
-        } finally {
-            setIsRemoving(false);
-        }
-    };
-
+const MostUsedCommentRow = ({ comment, rank, categories }: MostUsedCommentRowProps) => {
+    const categoryName = categories.find(c => c.id === comment.categoryId)?.name || '-';
     return (
         <tr className="hover:bg-secondary-50 transition-colors">
             <td className="px-6 py-4 whitespace-nowrap">
@@ -56,6 +30,9 @@ const MostUsedCommentRow = ({ comment, rank }: MostUsedCommentRowProps) => {
                 ) : (
                     <span className="text-sm text-secondary-400">-</span>
                 )}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+                <span className="text-sm text-secondary-600">{categoryName}</span>
             </td>
             <td className="px-6 py-4">
                 <span className="text-sm text-secondary-700 line-clamp-2">
@@ -76,31 +53,11 @@ const MostUsedCommentRow = ({ comment, rank }: MostUsedCommentRowProps) => {
                     }
                 </span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-right">
-                <button
-                    onClick={handleToggleFavourite}
-                    disabled={isRemoving}
-                    className={`px-3 py-1 rounded transition-colors inline-flex items-center gap-1 ${
-                        comment.isFavourite
-                            ? 'text-error-600 hover:text-error-700 hover:bg-error-50'
-                            : 'text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100'
-                    }`}
-                    title={comment.isFavourite ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                    {isRemoving ? (
-                        <div className="w-4 h-4">
-                            <LoadingSpinner />
-                        </div>
-                    ) : (
-                        <MdClose className="w-4 h-4" />
-                    )}
-                </button>
-            </td>
         </tr>
     );
 };
 
-const MostUsedComments = ({ apiComments }: MostUsedCommentsInterface) => {
+const MostUsedComments = ({ apiComments, apiCategories }: MostUsedCommentsInterface) => {
     const mostUsedComments = [...apiComments]
         .sort((a, b) => b.useCount - a.useCount)
         .slice(0, 10);
@@ -126,15 +83,15 @@ const MostUsedComments = ({ apiComments }: MostUsedCommentsInterface) => {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Rank</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Title</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Category</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Comment</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Usage</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider">Last Used</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-secondary-700 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-secondary-200">
                         {mostUsedComments.map((comment, index) => (
-                            <MostUsedCommentRow key={comment.id} comment={comment} rank={index + 1} />
+                            <MostUsedCommentRow key={comment.id} comment={comment} rank={index + 1} categories={apiCategories} />
                         ))}
                     </tbody>
                 </table>
