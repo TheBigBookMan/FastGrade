@@ -1,6 +1,17 @@
 import Header from '../components/common/layout/header/Header';
+import {useAuth} from "../contexts/AuthContext.tsx";
+import {useCategories} from "../hooks/useCategory.ts";
+import {useComments} from "../hooks/useComment.ts";
+import {useState} from "react";
+import LoadingSpinner from "../components/common/layout/LoadingSpinner.tsx";
 
 const DashboardPage = () => {
+    const {user} = useAuth();
+    if(!user) return;
+
+    const {data: apiCategories = [], isLoading: categoriesLoad, error: categoriesError} = useCategories(user.id);
+    const {data: apiComments = [], isLoading: commentsLoad, error: commentsError} = useComments(user.id);
+
     return (
         <div className="min-h-screen bg-secondary-50">
             <Header />
@@ -24,9 +35,16 @@ const DashboardPage = () => {
                                             <dt className="text-sm font-medium text-secondary-500 truncate">
                                                 Comments
                                             </dt>
-                                            <dd className="text-lg font-medium text-secondary-900">
-                                                0
-                                            </dd>
+
+                                            {commentsLoad ? (
+                                                <div className="container mx-auto">
+                                                    <LoadingSpinner />
+                                                </div>
+                                            ) : (
+                                                <dd className="text-lg font-medium text-secondary-900">
+                                                    {apiComments && apiComments.length}
+                                                </dd>
+                                            )}
                                         </dl>
                                     </div>
                                 </div>
@@ -44,9 +62,15 @@ const DashboardPage = () => {
                                             <dt className="text-sm font-medium text-secondary-500 truncate">
                                                 Categories
                                             </dt>
-                                            <dd className="text-lg font-medium text-secondary-900">
-                                                0
-                                            </dd>
+                                            {categoriesLoad ? (
+                                                <div className="container mx-auto">
+                                                    <LoadingSpinner />
+                                                </div>
+                                            ) : (
+                                                <dd className="text-lg font-medium text-secondary-900">
+                                                    {apiCategories && apiCategories.length}
+                                                </dd>
+                                            )}
                                         </dl>
                                     </div>
                                 </div>
