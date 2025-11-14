@@ -4,6 +4,7 @@ import {useCategories} from "../hooks/useCategory.ts";
 import {useComments} from "../hooks/useComment.ts";
 import {useState} from "react";
 import LoadingSpinner from "../components/common/layout/LoadingSpinner.tsx";
+import {Link} from "react-router-dom";
 
 const DashboardPage = () => {
     const {user} = useAuth();
@@ -24,7 +25,7 @@ const DashboardPage = () => {
                     </p>
                     
                     <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="bg-white overflow-hidden shadow rounded-lg">
+                        <Link to={'/comments'} className="bg-white overflow-hidden shadow rounded-lg hover:bg-primary-50 transition">
                             <div className="p-5">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0">
@@ -49,9 +50,9 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
-                        <div className="bg-white overflow-hidden shadow rounded-lg">
+                        <Link to={'/categories'} className="bg-white overflow-hidden shadow rounded-lg hover:bg-primary-50 transition">
                             <div className="p-5">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0">
@@ -75,9 +76,9 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
-                        <div className="bg-white overflow-hidden shadow rounded-lg">
+                        <Link to={'/attachments'} className="bg-white overflow-hidden shadow rounded-lg hover:bg-primary-50 transition">
                             <div className="p-5">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0">
@@ -95,7 +96,7 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </main>
