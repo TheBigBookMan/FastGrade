@@ -9,6 +9,7 @@ import ErrorState from "../components/common/layout/ErrorState";
 import { Attachment } from "../types/attachmentTypes.ts";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { toast } from "sonner";
+import {useCreateAttachment} from "../hooks/useAttachment.ts";
 
 const AttachmentsPage = () => {
     const { user } = useAuth();
@@ -86,6 +87,7 @@ const AttachmentsPage = () => {
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const createAttachment = useCreateAttachment(user.id);
     
     // Search and filter state
     const [searchTerm, setSearchTerm] = useState("");
@@ -128,36 +130,28 @@ const AttachmentsPage = () => {
     }, [attachments, searchTerm, selectedFileType]);
 
     const handleUpload = async (file: File, name: string) => {
+        if (!user) return;
         setIsLoading(true);
         setError(null);
 
         try {
-            // Mock upload - in real app, this would call the API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Prepare FormData for backend API
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("name", name);
+            formData.append("userId", user.id);
 
-            const newAttachment: Attachment = {
-                id: Date.now().toString(),
-                name: name.toLowerCase().replace(/\s+/g, '-'),
-                originalName: file.name,
-                fileType: file.name.split('.').pop() || '',
-                fileSize: file.size,
-                mimeType: file.type,
-                url: file.type.startsWith('image/') 
-                    ? `https://picsum.photos/400/300?random=${Date.now()}` 
-                    : `/mock-files/${file.name}`,
-                thumbnailUrl: file.type.startsWith('image/') 
-                    ? `https://picsum.photos/200/150?random=${Date.now()}` 
-                    : undefined,
-                userId: user.id,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
+            // Call mutation
+            const uploaded = await createAttachment.mutateAsync(formData, user.id);
 
-            setAttachments(prev => [newAttachment, ...prev]);
-            toast.success('File uploaded successfully');
+            // Sync local state (optional if using react-query to fetch attachments)
+            setAttachments(prev => [uploaded, ...prev]);
+
+            toast.success("File uploaded successfully");
         } catch (err) {
-            setError('Failed to upload file');
-            toast.error('Failed to upload file');
+            console.error(err);
+            setError("Failed to upload file");
+            toast.error("Failed to upload file");
         } finally {
             setIsLoading(false);
         }
