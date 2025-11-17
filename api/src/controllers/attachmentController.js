@@ -2,6 +2,8 @@ import logger from "../utils/logger.js";
 import attachmentService from '../services/attachmentService.js';
 import returnError from "../middleware/returnError.js";
 import returnSuccess from "../middleware/returnSuccess.js";
+import {uploadToR2} from "../utils/upload/r2.js";
+import {generateThumbnail} from "../utils/upload/thumbnail.js";
 
 class AttachmentController {
     async fetchAttachmentsByUserId (req, res) {
@@ -13,8 +15,7 @@ class AttachmentController {
 
             const attachments = await attachmentService.getAttachmentsByUserId(userId);
 
-            // TODO FIX THE RESPONES
-            return res.json(attachments);
+            return returnSuccess.successFetch(res, attachments, 'Successfully fetch attachments');
 
         } catch(err) {
             return returnError.internalError(res, 'Error fetching attachments by userId', err);
@@ -23,23 +24,42 @@ class AttachmentController {
 
     async postAttachment(req, res) {
         try {
+            const { userId } = req.params;
+            const { name, description } = req.body;
+            const file = req.file;
 
-            const {userId} = req.params;
-            const {name, description, imageURL} = req.body;
+            if (!userId) return res.status(400).json({ error: "Missing userId" });
+            if (!name) return res.status(400).json({ error: "Missing name" });
+            if (!file) return res.status(400).json({ error: "File is required" });
 
-            if(!userId) return returnError.loggerWarnUserId(res);
-            if(!name) return returnError.loggerWarnRequiredAttribute(res, 'attachment', 'name');
+            // Extract metadata
+            const originalName = file.originalname;
+            const fileSize = file.size;
+            const mimeType = file.mimetype;
+            const fileType = mimeType.split("/")[1];
 
-            const newAttachment = await attachmentService.createAttachment({
-                userId, 
+            // Upload file & thumbnail
+            const fileUrl = await uploadToR2(file.buffer, originalName, mimeType);
+            const thumbnailUrl = mimeType.startsWith("image/")
+                ? await generateThumbnail(file.buffer, originalName)
+                : null;
+
+            // Save in DB
+            await attachmentService.createAttachment({
+                userId,
                 name,
                 description,
-                imageURL
+                url: fileUrl,
+                thumbnailUrl,
+                originalName,
+                fileType,
+                fileSize,
+                mimeType
             });
-// todo fix return
-            return res.status(201).json(newAttachment);
 
-        } catch(err) {
+            return returnSuccess.successCreate(res, 'Attachment successfully created');
+
+        } catch (err) {
             return returnError.internalError(res, 'Error creating attachment', err);
         }
     }
@@ -54,8 +74,7 @@ class AttachmentController {
 
             const attachment = await attachmentService.getAttachmentByUserId(userId, attachmentId);
 
-            // fix the response
-            return res.json(attachment);
+            return returnSuccess.successFetch(res, attachment, 'Successfully fetch attachment');
 
         } catch(err) {
             return returnError.internalError(res, 'Error fetching attachment', err);
