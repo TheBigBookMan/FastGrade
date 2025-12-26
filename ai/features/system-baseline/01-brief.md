@@ -21,8 +21,6 @@ What this system **currently achieves**:
 - Persist user preferences and settings
 - Collect user feedback about the application
 - Provide a responsive web interface for all management operations
-- Support tag-based organization (basic structure in place)
-- Define hotkey mappings for quick comment insertion (data model exists)
 
 ## Non-Goals
 What the current system explicitly does **not** do:
@@ -50,7 +48,7 @@ Secondary interactions:
 ### Primary Flow: Creating and Using Feedback Comments
 
 1. **Initial Setup**
-   - User logs in with email (currently hardcoded authentication)
+   - User logs in with email (Verified hardcoded authentication in /webapp/src/contexts/AuthContext.tsx:22-38 - always returns test user id: 'cmenmlrs10000nfcnaeclyq4o', email: 'test@test.com')
    - Dashboard displays summary: total comments, total categories, favorite comments, most used comments
 
 2. **Creating Categories**
@@ -72,7 +70,7 @@ Secondary interactions:
    - User can edit comment title, body, or category assignment
    - User can toggle favorite status via star icon
    - User can delete comments (with confirmation)
-   - Comments track usage count and last used timestamp (updated externally, likely by extension)
+   - Comments track usage count and last used timestamp (Not Implemented: fields exist in schema at /api/prisma/schema.prisma:44-45 but no code in /webapp or /api updates these values - always remain useCount=0, lastUsedAt=null)
    - User can reorder comments within their display
 
 5. **Managing Attachments**
@@ -91,14 +89,14 @@ Secondary interactions:
    - Submits title and description about app experience
    - Feedback is stored with user association and timestamp
 
-### Secondary Flow: Browser Extension Usage (Implied)
+### Secondary Flow: Browser Extension Integration
 
-1. User installs browser extension
-2. While grading online (e.g., Google Docs, LMS), user invokes extension
-3. Extension displays comment library
-4. User selects comment to insert
-5. System increments useCount and updates lastUsedAt
-6. Extension may use hotkey mappings for frequently used comments
+**STATUS**: Out of Scope - Extension codebase exists at /extension but is incomplete:
+- Extension source files exist (/extension/src/sidebar, /extension/src/popup) but API integration file (/extension/src/utils/api.ts) is empty (1 line)
+- No evidence of API calls to documented endpoints
+- No authentication mechanism implemented
+- No useCount/lastUsedAt update logic found
+- Extension appears to be scaffolding without functional integration
 
 ## Success Criteria
 
@@ -131,48 +129,65 @@ Secondary interactions:
 - Docker compose orchestrates all services
 - Frontend state management via React Query handles caching and invalidation
 
-## Open Questions
+## Scope Boundaries & Unknowns
 
-### Current System Ambiguities
-- **Authentication**: Currently hardcoded - what is the intended production auth mechanism?
-- **Comment Usage Tracking**: useCount and lastUsedAt are defined but not updated by webapp - is this extension-only?
-- **Tag System**: CommentTag junction table exists but no UI or service logic - is this in active development?
-- **Hotkey Mappings**: Schema defined, no controllers/UI - is this planned or abandoned?
-- **Settings Page**: Empty in webapp - what settings are intended?
-- **Rubric References**: Schema contains commented-out rubric models - is this future scope?
-- **Category Cascade Behavior**: What happens to comments when category is deleted? (Currently they become uncategorized)
-- **Attachment Limits**: Are there file size limits, file type restrictions, or storage quotas?
-- **Comment Keywords Field**: JSON field exists but unused - is this for future search/tagging?
-- **Multi-tenancy**: Are users isolated? Can users share comments across accounts?
+### In Scope (Verified Through Code)
+All current capabilities verified through direct code inspection:
 
-### Behavioral Unknowns
-- **Comment Ordering**: How is the 'order' field used? Is it per-category or global?
-- **Default Settings**: `/api/src/config/defaultSettings.json` is empty - are defaults needed?
-- **Error Recovery**: What happens if R2 upload fails mid-operation?
-- **Concurrent Edits**: How does the system handle simultaneous updates to same comment?
-- **Soft Delete**: Are deletions permanent or soft-deleted?
-- **Attachment Deletion**: When attachment is deleted, is file removed from R2?
+**Authentication**:
+- Hardcoded frontend authentication at /webapp/src/contexts/AuthContext.tsx:22-38
+- No API middleware authentication (verified at /api/src/app.js:1-21 - no auth middleware in chain)
+- Test user credentials: id 'cmenmlrs10000nfcnaeclyq4o', email 'test@test.com'
 
-### Inconsistencies Observed
-- **Authentication Mismatch**: Webapp uses hardcoded login; API has no auth middleware
-- **Naming**: Project folder is "fastgrade" but references "quicknote" in database URL and schema
-- **Settings Service**: Has merge logic and default handling, but defaultSettings.json is empty
-- **Feedback Context**: feedbackController exists in API but purpose/admin view unclear
-- **Extension Integration**: Extension code exists but integration points with webapp/api are not evident
+**API Endpoints**:
+- Comment CRUD: /api/src/routes/comment.js:1-13
+- Category CRUD: /api/src/routes/category.js:1-13
+- Attachment upload/fetch: /api/src/routes/attachment.js:1-10
+- Tag CRUD (basic): /api/src/routes/tag.js:1-10
+- Feedback submission: /api/src/routes/feedback.js:1-11
+- Settings management: /api/src/routes/settings.js:1-11
+
+**Data Model**:
+- Prisma schema at /api/prisma/schema.prisma
+- Category deletion does NOT cascade to comments (schema line 40: no onDelete specified, defaults to SetNull)
+- Comment deletion cascades to CommentTag (schema line 75: onDelete: Cascade)
+- User deletion cascades to all relations (schema lines 38, 63, 76, 87, 106, 124, 134, 142)
+
+**File Upload Processing**:
+- Multer memory storage (file in req.file.buffer)
+- R2 upload at /api/src/utils/upload/r2.js:12-23
+- Thumbnail generation at /api/src/utils/upload/thumbnail.js:4-11 (synchronous, 300px width, JPEG quality 80)
+
+### Out of Scope (Incomplete or Unimplemented)
+The following exist in the data model but have NO confirmed implementation:
+
+- **Tag System**: Tables exist (Tag at schema.prisma:56-67, CommentTag at 69-81) with basic CRUD endpoints (/api/src/routes/tag.js) but tagController.createTag has TODO comment (line 50-51) indicating CommentTag association is not implemented
+- **Hotkey Mappings**: HotkeyMapping table exists (schema.prisma:116-128) but no API routes or controller found
+- **Rubric Models**: Schema contains commented-out rubric models (schema.prisma:148-175) - not implemented
+- **Comment Usage Tracking**: useCount and lastUsedAt fields exist (schema.prisma:44-45) but never updated - no code found in /webapp, /api, or /extension that modifies these values
+- **Browser Extension**: Extension scaffolding exists but API integration incomplete (see Secondary Flow above)
+
+### Architectural Inconsistencies (Observed, Not Fixed)
+- **Naming Mismatch**: Project folder "fastgrade" vs database name "quicknote" (visible in LoginPage.tsx:53,86)
+- **Authentication Gap**: Webapp has login UI (/webapp/src/pages/auth/LoginPage.tsx) but API has no authentication middleware (verified /api/src/app.js:10-18 - only httpLogger, helmet, cors, json middleware)
+- **Settings Page**: API has settings endpoints (/api/src/routes/settings.js) but frontend implementation unknown
+- **Feedback Admin View**: Feedback GET endpoints exist (/api/src/routes/feedback.js:6,9) but admin UI unknown
+- **Comment Order Field**: Comment.order field exists (schema.prisma:43) but commentService only orders by createdAt desc (/api/src/services/commentService.js:7)
 
 ## Known Limitations
 
 ### Current Technical Constraints
-- No production authentication system
-- No test coverage for most endpoints
+- No authentication middleware on API (verified /api/src/app.js:10-18)
+- Test coverage unknown - no test files found in controllers or services
 - No OpenAPI documentation
 - No ERD visualization
 - No API versioning
-- Hardcoded test user credentials in frontend
-- File uploads kept in memory before R2 transfer
-- No database backups or migration strategy documented
-- No monitoring or alerting
-- No rate limiting or abuse protection
+- File uploads limited by Multer default settings (no explicit size limit configured)
+- No file type validation beyond mimetype check (/api/src/controllers/attachmentController.js:43)
+- No R2 cleanup on attachment deletion (no DELETE endpoint at /api/src/routes/attachment.js)
+- Database backup strategy not documented
+- Monitoring beyond console logging (winston) not implemented
+- No rate limiting (verified /api/src/app.js - no rate limit middleware)
 
 ### Current UX Limitations
 - Settings page is empty placeholder
@@ -186,11 +201,13 @@ Secondary interactions:
 - Comment body limited to 1024 characters
 
 ### Known Rough Edges
-- Category deletion impact on comments not documented
-- Attachment deletion doesn't cascade to R2 cleanup
-- No validation on file types or sizes during upload
-- Drag-and-drop order changes require explicit "Save Order" click
-- Dashboard stats don't update in real-time (require page refresh)
-- No loading states during file uploads
-- Image thumbnails generated synchronously (could block response)
-- No pagination for large comment/attachment lists
+- Category deletion sets comments.categoryId to null (verified schema.prisma:40 - no onDelete cascade)
+- Attachment deletion endpoint does not exist (verified /api/src/routes/attachment.js - only GET and POST routes)
+- No R2 cleanup when attachment deleted (no delete endpoint exists)
+- No file size limit validation in attachmentController (/api/src/controllers/attachmentController.js:25-65)
+- No file type whitelist - accepts any mimetype
+- Thumbnail generation synchronous and blocks response (/api/src/controllers/attachmentController.js:42-45)
+- Thumbnail dimensions fixed at 300px width (/api/src/utils/upload/thumbnail.js:6)
+- No pagination on any endpoint - all queries use findMany without take/skip (verified in services)
+- Comments ordered by createdAt desc, ignoring order field (/api/src/services/commentService.js:7)
+- Categories ordered by order field asc (/api/src/services/categoryService.js:7)

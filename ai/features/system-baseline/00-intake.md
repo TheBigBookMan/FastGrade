@@ -77,6 +77,25 @@ The baseline initiative includes:
 
 ---
 
+## Baseline Verification Rules
+
+This system baseline must reflect **verified reality only**.
+
+All statements about behavior, capabilities, or constraints MUST be:
+- verified via direct code inspection, and
+- accompanied by a concrete code reference
+
+Required format for verification:
+- `Verified in /relative/path/to/file.ts:<line-number>`
+
+If behavior cannot be verified in code:
+- it must be marked as **uncertain**, **inconsistent**, or **out-of-scope**
+- speculation is not allowed
+
+Future-looking or aspirational statements are prohibited in baseline artifacts.
+
+---
+
 ## Constraints
 
 - Production behaviour must remain unchanged
@@ -104,6 +123,56 @@ These are expected and should be captured, not fixed yet.
 - Are there deprecated or unused routes?
 - Which tables are actively written to vs read-only?
 - Are there environment-specific behaviours?
+
+---
+
+## Open Questions Resolution (Baseline)
+
+All open questions identified during baseline review must be resolved using one of the following outcomes:
+
+- **Verified** — confirmed via code inspection with reference
+- **Not Implemented** — referenced in docs or schema but no runtime behavior exists
+- **Inconsistent** — behavior differs across code paths
+- **Out of Scope** — code exists but is not integrated into the current system
+- **Unknown** — insufficient evidence in codebase
+
+Each resolved question must:
+- update the product brief and acceptance criteria
+- include a code reference where applicable
+- avoid inferred intent or assumed behavior
+
+---
+
+## Baseline Progression Gates
+
+### Before API Baseline Can Proceed
+
+The following conditions MUST be satisfied:
+
+- [ ] All behavioral claims in acceptance criteria include code references
+- [ ] All open questions are resolved using defined resolution outcomes
+- [ ] Integration tests exist and pass for documented endpoints
+- [ ] API response envelope consistency is verified
+- [ ] Cascade behaviors are confirmed in schema or code
+- [ ] Browser extension integration is:
+  - documented with code references, or
+  - explicitly marked as out-of-scope
+
+API baseline work must not begin until all items above are complete.
+
+---
+
+### Before Data Model Baseline Can Proceed
+
+The following conditions MUST be satisfied:
+
+- [ ] ERD generated directly from Prisma schema
+- [ ] All constraints documented with schema references
+- [ ] Migration history reviewed
+- [ ] Indexes documented
+- [ ] Orphaned or unused fields identified and noted
+
+Data model baseline work must not begin until all items above are complete.
 
 ---
 
