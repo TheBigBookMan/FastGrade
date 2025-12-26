@@ -48,11 +48,18 @@ Optionally:
 
 ## Constraints
 
-- Do not invent requirements
-- Do not widen scope
-- Do not define implementation tasks
-- Do not design APIs, databases, or UI components
-- If intent is unclear, list it as an assumption or open question
+- Must read and obey `/ai/constitution.md`
+- Must follow product artifact standards defined in:
+  - `/ai/artifacts/product/README.md`
+- Must focus on:
+  - problem definition
+  - user intent
+  - scope boundaries
+- Must not define implementation details
+- Must explicitly document assumptions and open questions
+- Must avoid solution bias
+- Must not override acceptance criteria or technical constraints
+- Must stop and report when requirements are ambiguous or conflicting
 
 ---
 
