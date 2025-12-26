@@ -3,10 +3,19 @@ import globals from "globals";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
     {
-    rules: {
-      semi: ["error", "always"], // Require semicolons
+        files: ["**/__tests__/**/*.{js,cjs}", "**/*.test.{js,cjs}"],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                describe: "readonly",
+                it: "readonly",
+                expect: "readonly",
+                beforeEach: "readonly",
+                afterEach: "readonly",
+                vi: "readonly",
+            },
+        },
     },
-  },
+
 ]);
