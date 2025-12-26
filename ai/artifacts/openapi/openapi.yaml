@@ -1,0 +1,1725 @@
+openapi: 3.0.3
+info:
+  title: FastGrade API
+  version: 1.0.0
+  description: |
+    FastGrade API for managing teacher feedback comments, categories, attachments, tags, and settings.
+
+    **BASELINE DOCUMENTATION - This specification represents the CURRENT state of the API as implemented.**
+
+    This is NOT a design document - it captures existing behavior including quirks and inconsistencies.
+    All endpoints, schemas, and behaviors are documented exactly as they exist in the codebase.
+
+    ## Known Inconsistencies
+    - No authentication middleware (userId is client-provided with no server validation)
+    - Health endpoint returns non-standard response format
+    - Tag endpoints have inconsistent response envelopes (raw JSON vs standard envelope)
+    - Settings endpoints have inconsistent response envelopes (raw JSON vs standard envelope)
+    - Attachment POST errors return inconsistent format (plain error object vs standard envelope)
+    - Comment update endpoint has potential bug with categoryId handling (uses connect instead of set)
+    - Tag creation requires commentId but does NOT create CommentTag association (TODO in code)
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+
+security: []
+
+tags:
+  - name: Health
+    description: Service health check
+  - name: Comments
+    description: Feedback comment management
+  - name: Categories
+    description: Category organization for comments
+  - name: Attachments
+    description: File upload and management
+  - name: Tags
+    description: Tag management for comments
+  - name: Feedback
+    description: User feedback submission
+  - name: Settings
+    description: User settings management
+
+paths:
+  /health:
+    get:
+      summary: Check API health
+      description: |
+        Returns API health status.
+
+        **INCONSISTENCY**: This endpoint returns `{ok: true}` instead of the standard response envelope
+        used by all other endpoints. Verified in /api/src/app.js:15
+      tags:
+        - Health
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                required:
+                  - ok
+
+  /api/comment:
+    post:
+      summary: Create new comment
+      description: Create a new feedback comment for a user
+      tags:
+        - Comments
+      operationId: createComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - body
+              properties:
+                userId:
+                  type: string
+                  description: User ID (client-provided, no server validation)
+                  example: cmenmlrs10000nfcnaeclyq4o
+                title:
+                  type: string
+                  nullable: true
+                  description: Optional comment title
+                  example: Grammar Feedback
+                body:
+                  type: string
+                  maxLength: 1024
+                  description: Comment body (max 1024 characters)
+                  example: Good use of punctuation in this paragraph.
+                categoryId:
+                  type: string
+                  nullable: true
+                  description: Optional category ID
+                  example: cm123abc
+                isFavourite:
+                  type: boolean
+                  nullable: true
+                  default: false
+                  description: Mark as favorite
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request (missing userId or body)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/comment/{userId}:
+    get:
+      summary: Get all comments for a user
+      description: |
+        Fetch all comments belonging to a user.
+
+        Comments are ordered by createdAt DESC (NOT by the order field).
+        Verified in /api/src/services/commentService.js:7
+      tags:
+        - Comments
+      operationId: getCommentsByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+          example: cmenmlrs10000nfcnaeclyq4o
+        - name: includeCategories
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+          description: Include category details in response (string boolean)
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched Successfully fetched comments
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/comment/{commentId}/user/{userId}:
+    get:
+      summary: Get single comment by ID
+      description: Fetch a specific comment for a user
+      tags:
+        - Comments
+      operationId: getCommentById
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Comment retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched Successfully fetched comment
+                  data:
+                    $ref: '#/components/schemas/Comment'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request (missing userId or commentId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update comment
+      description: |
+        Update comment fields.
+
+        **POTENTIAL BUG**: The service uses `category: { connect: { id: categoryId } }` which may fail
+        if categoryId is null or undefined. Verified in /api/src/services/commentService.js:40-42
+      tags:
+        - Comments
+      operationId: updateComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                body:
+                  type: string
+                  maxLength: 1024
+                categoryId:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully updated comment
+                  data:
+                    $ref: '#/components/schemas/Comment'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete comment
+      description: |
+        Permanently delete a comment.
+
+        Associated CommentTag entries are cascade deleted.
+        No soft delete or recovery mechanism exists.
+      tags:
+        - Comments
+      operationId: deleteComment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Comment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/comment/{commentId}/user/{userId}/favourite:
+    put:
+      summary: Update comment favorite status
+      description: Toggle or set the favorite status of a comment
+      tags:
+        - Comments
+      operationId: updateCommentFavourite
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - favourite
+              properties:
+                favourite:
+                  type: boolean
+                  description: New favorite status
+      responses:
+        '200':
+          description: Favorite status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully updated comment favourite status
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      userId:
+                        type: string
+                      title:
+                        type: string
+                        nullable: true
+                      body:
+                        type: string
+                      categoryId:
+                        type: string
+                        nullable: true
+                      isFavourite:
+                        type: boolean
+                      order:
+                        type: integer
+                      useCount:
+                        type: integer
+                      lastUsedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      keywords:
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/category:
+    post:
+      summary: Create new category
+      description: |
+        Create a new category for organizing comments.
+
+        Order number is auto-calculated as (existing_categories.length + 1).
+        Verified in /api/src/controllers/categoryController.js:31-32
+      tags:
+        - Categories
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - name
+              properties:
+                userId:
+                  type: string
+                  description: User ID (client-provided, no server validation)
+                name:
+                  type: string
+                  description: Category name (must be unique per user)
+                description:
+                  type: string
+                  nullable: true
+                  description: Optional category description
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request (missing userId or name, or duplicate name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/category/{userId}:
+    get:
+      summary: Get all categories for a user
+      description: |
+        Fetch all categories belonging to a user.
+
+        Categories are ordered by order field ASC.
+        Verified in /api/src/services/categoryService.js:7
+      tags:
+        - Categories
+      operationId: getCategoriesByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - name: includeComments
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+          description: Include comments in response (string boolean)
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched categories
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/category/{categoryId}/user/{userId}:
+    get:
+      summary: Get single category by ID
+      description: Fetch a specific category for a user
+      tags:
+        - Categories
+      operationId: getCategoryById
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - name: includeComments
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'false'
+          description: Include comments in response
+      responses:
+        '200':
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched Successfully fetched a category
+                  data:
+                    $ref: '#/components/schemas/Category'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update category
+      description: Update category name, description, or order
+      tags:
+        - Categories
+      operationId: updateCategory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                order:
+                  type: integer
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete category
+      description: |
+        Delete a category.
+
+        Comments associated with this category have categoryId set to NULL (no cascade delete).
+        Verified in /api/prisma/schema.prisma:40 - no onDelete specified, defaults to SetNull.
+
+        After deletion, remaining categories are reordered (1, 2, 3, ...).
+        Verified in /api/src/services/categoryService.js:62-74
+      tags:
+        - Categories
+      operationId: deleteCategory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/category/user/{userId}/order:
+    put:
+      summary: Update category order
+      description: |
+        Reorder categories in bulk.
+
+        Uses transaction to ensure all-or-nothing update.
+        Order is assigned based on array index (0-based becomes 1-based: idx + 1).
+      tags:
+        - Categories
+      operationId: updateCategoryOrder
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - categoryIds
+              properties:
+                categoryIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of category IDs in desired order
+      responses:
+        '200':
+          description: Category order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request (missing userId or categoryIds, or ownership mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/attachment/{userId}:
+    get:
+      summary: Get all attachments for a user
+      description: |
+        Fetch all attachments belonging to a user.
+
+        No ordering applied (returns in database insertion order).
+        Verified in /api/src/services/attachmentService.js - no orderBy clause.
+      tags:
+        - Attachments
+      operationId: getAttachmentsByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Attachments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetch Successfully fetch attachments
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Attachment'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Upload attachment
+      description: |
+        Upload file to R2 storage and create attachment record.
+
+        Processing flow (verified in /api/src/controllers/attachmentController.js:25-65):
+        1. File uploaded to memory via multer
+        2. File uploaded to R2 with timestamp-prefixed key
+        3. If image, thumbnail generated (300px width, JPEG quality 80) - SYNCHRONOUS, blocks response
+        4. Thumbnail uploaded to R2 with 'thumb-' prefix
+        5. Database record created with both URLs
+
+        **NOT IMPLEMENTED**:
+        - No file size limit validation
+        - No file type whitelist (accepts any mimetype)
+        - No virus scanning
+        - No R2 cleanup on upload failure
+      tags:
+        - Attachments
+      operationId: uploadAttachment
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - name
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload
+                name:
+                  type: string
+                  description: Display name for file
+                description:
+                  type: string
+                  description: Optional file description
+      responses:
+        '201':
+          description: Attachment uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request (missing file, userId, or name)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: INCONSISTENT - Does not use standard error envelope
+                    example: Missing userId
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/attachment/{attachmentId}/user/{userId}:
+    get:
+      summary: Get single attachment by ID
+      description: Fetch a specific attachment for a user
+      tags:
+        - Attachments
+      operationId: getAttachmentById
+      parameters:
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Attachment ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Attachment retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetch Successfully fetch attachment
+                  data:
+                    $ref: '#/components/schemas/Attachment'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tag/{userId}:
+    get:
+      summary: Get all tags for a user
+      description: |
+        Fetch all tags belonging to a user.
+
+        **INCONSISTENCY**: Returns raw JSON array, NOT standard response envelope.
+        Verified in /api/src/controllers/tagController.js:15
+      tags:
+        - Tags
+      operationId: getTagsByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tag:
+    post:
+      summary: Create new tag
+      description: |
+        Create a new tag.
+
+        **INCOMPLETE IMPLEMENTATION**: Requires commentId in request body but does NOT create
+        CommentTag association. Verified in /api/src/controllers/tagController.js:50-51 - TODO comment.
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/tagController.js:53
+      tags:
+        - Tags
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - commentId
+                - name
+              properties:
+                userId:
+                  type: string
+                  description: User ID
+                commentId:
+                  type: string
+                  description: Comment ID (REQUIRED but NOT used - see description)
+                name:
+                  type: string
+                  description: Tag name (must be unique per user)
+      responses:
+        '201':
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          description: Bad request (missing required fields or duplicate name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tag/{tagId}/user/{userId}:
+    get:
+      summary: Get single tag by ID
+      description: |
+        Fetch a specific tag for a user.
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/tagController.js:32
+      tags:
+        - Tags
+      operationId: getTagById
+      parameters:
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Tag ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Tag retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/feedback:
+    get:
+      summary: Get all feedback
+      description: |
+        Fetch all feedback from all users.
+
+        **SECURITY CONCERN**: No authentication or authorization - any client can access all feedback.
+      tags:
+        - Feedback
+      operationId: getAllFeedback
+      responses:
+        '200':
+          description: Feedback retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched feedback
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Submit feedback
+      description: Create a new feedback submission
+      tags:
+        - Feedback
+      operationId: createFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - title
+                - description
+              properties:
+                userId:
+                  type: string
+                  description: User ID
+                title:
+                  type: string
+                  description: Feedback title
+                description:
+                  type: string
+                  description: Feedback description
+      responses:
+        '201':
+          description: Feedback created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad request (missing required fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/feedback/{feedbackId}/user/{userId}:
+    get:
+      summary: Get single feedback by ID
+      description: Fetch a specific feedback submission
+      tags:
+        - Feedback
+      operationId: getFeedbackById
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feedback ID
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Feedback retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched feedback
+                  data:
+                    $ref: '#/components/schemas/Feedback'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/feedback/user/{userId}:
+    get:
+      summary: Get all feedback for a user
+      description: Fetch all feedback submissions from a specific user
+      tags:
+        - Feedback
+      operationId: getFeedbackByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Feedback retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully fetched feedback
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/settings/{userId}:
+    get:
+      summary: Get settings for a user
+      description: |
+        Fetch user settings.
+
+        If no settings record exists, returns default settings from /api/src/config/defaultSettings.json
+        (currently an empty object {}).
+        Verified in /api/src/services/settingsService.js:6-12
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/settingsController.js:15
+      tags:
+        - Settings
+      operationId: getSettingsByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update settings
+      description: |
+        Merge new settings with existing settings.
+
+        Uses SHALLOW merge (spread operator) - does NOT deep merge nested objects.
+        Verified in /api/src/services/settingsService.js:24
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/settingsController.js:46
+      tags:
+        - Settings
+      operationId: updateSettings
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Partial or full settings object to merge
+              additionalProperties: true
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Settings not found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/settings:
+    post:
+      summary: Create settings
+      description: |
+        Create initial settings record for a user.
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/settingsController.js:29
+      tags:
+        - Settings
+      operationId: createSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  description: User ID (must be unique - one settings record per user)
+      responses:
+        '201':
+          description: Settings created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Bad request (missing userId or duplicate)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/settings/{userId}/default:
+    get:
+      summary: Set default settings for user
+      description: |
+        Reset or initialize user settings to default values.
+
+        **INCONSISTENCY**: Returns raw JSON object, NOT standard response envelope.
+        Verified in /api/src/controllers/settingsController.js:61
+      tags:
+        - Settings
+      operationId: setDefaultSettings
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Default settings applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation succeeded
+        data:
+          type: object
+          nullable: true
+          description: Optional response data
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - success
+        - message
+        - timestamp
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error description
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - success
+        - message
+        - timestamp
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm123abc
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        title:
+          type: string
+          nullable: true
+          example: Grammar Feedback
+        body:
+          type: string
+          maxLength: 1024
+          example: Good use of punctuation.
+        categoryId:
+          type: string
+          nullable: true
+          example: cm456def
+        isFavourite:
+          type: boolean
+          example: false
+        order:
+          type: integer
+          example: 0
+          description: |
+            UNUSED - Comments are ordered by createdAt DESC, not by this field.
+            Verified in /api/src/services/commentService.js:7
+        useCount:
+          type: integer
+          example: 0
+          description: |
+            UNUSED - No code updates this value. Always remains 0.
+            Verified in brief: no code in /webapp, /api, or /extension updates this field.
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            UNUSED - No code updates this value. Always remains null.
+            Verified in brief: no code in /webapp, /api, or /extension updates this field.
+        keywords:
+          nullable: true
+          description: |
+            UNUSED - JSON field that is always null. No code sets this value.
+            Verified in /api/prisma/schema.prisma:46
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        category:
+          $ref: '#/components/schemas/Category'
+          nullable: true
+          description: Only included if includeCategories=true
+      required:
+        - id
+        - userId
+        - body
+        - isFavourite
+        - order
+        - useCount
+        - createdAt
+        - updatedAt
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm456def
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        name:
+          type: string
+          example: Grammar
+        description:
+          type: string
+          nullable: true
+          example: Feedback about grammar and punctuation
+        order:
+          type: integer
+          example: 1
+          description: Categories are ordered by this field ASC
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          description: Only included if includeComments=true
+      required:
+        - id
+        - userId
+        - name
+        - order
+        - createdAt
+        - updatedAt
+
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm789ghi
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        name:
+          type: string
+          example: Example Document
+        originalName:
+          type: string
+          example: document.pdf
+        fileType:
+          type: string
+          example: pdf
+          description: File extension extracted from mimetype
+        fileSize:
+          type: integer
+          example: 1024000
+          description: File size in bytes
+        mimeType:
+          type: string
+          example: application/pdf
+        description:
+          type: string
+          nullable: true
+          example: Sample document for reference
+        url:
+          type: string
+          format: uri
+          example: https://r2.example.com/files/document.pdf
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: https://r2.example.com/files/thumb-document.jpg
+          description: |
+            Only generated for images (mimeType starts with "image/").
+            Thumbnail is 300px width, JPEG quality 80.
+            Verified in /api/src/utils/upload/thumbnail.js:6-7
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - originalName
+        - fileType
+        - fileSize
+        - mimeType
+        - url
+        - createdAt
+        - updatedAt
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm012jkl
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        name:
+          type: string
+          example: important
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - createdAt
+
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm345mno
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        title:
+          type: string
+          example: Feature Request
+        description:
+          type: string
+          example: Would love to see dark mode support
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - title
+        - description
+        - createdAt
+
+    Settings:
+      type: object
+      properties:
+        id:
+          type: string
+          example: cm678pqr
+        userId:
+          type: string
+          example: cmenmlrs10000nfcnaeclyq4o
+        settings:
+          type: object
+          additionalProperties: true
+          example: {}
+          description: |
+            User settings as JSON object. Default is empty object {}.
+            Verified in /api/src/config/defaultSettings.json
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - settings
+        - createdAt
+        - updatedAt

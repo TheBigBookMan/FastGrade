@@ -1,0 +1,105 @@
+erDiagram
+    %% FastGrade Database Schema - Baseline ERD
+    %% Generated from /api/prisma/schema.prisma
+    %% This represents the ACTUAL state of the database as-is
+    %% Includes unused fields and incomplete features
+
+    User ||--o{ Comment : "owns"
+    User ||--o{ Category : "owns"
+    User ||--o{ Attachment : "owns"
+    User ||--o{ Tag : "owns"
+    User ||--o{ CommentTag : "owns"
+    User ||--o{ HotkeyMapping : "owns"
+    User ||--o{ Settings : "has"
+    User ||--o{ Feedback : "submits"
+
+    Category ||--o{ Comment : "organizes"
+
+    Comment ||--o{ CommentTag : "tagged_by"
+    Comment ||--o{ HotkeyMapping : "mapped_to"
+
+    Tag ||--o{ CommentTag : "links_to"
+
+    User {
+        string id PK "CUID"
+        string email UK "Unique constraint"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Comment {
+        string id PK "CUID"
+        string userId FK "CASCADE on User delete"
+        string categoryId FK "NULL on Category delete"
+        string title "Nullable - optional comment title"
+        string body "VarChar(1024) - required"
+        boolean isFavourite "Default false"
+        int order "Default 0 - UNUSED: queries use createdAt"
+        int useCount "Default 0 - UNUSED: never updated"
+        datetime lastUsedAt "Nullable - UNUSED: always null"
+        json keywords "Nullable - UNUSED: always null"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Category {
+        string id PK "CUID"
+        string userId FK "CASCADE on User delete"
+        string name "Unique per user"
+        string description "Nullable"
+        int order "Sequential ordering"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Tag {
+        string id PK "CUID"
+        string userId FK "CASCADE on User delete"
+        string name "Unique per user"
+        datetime createdAt
+    }
+
+    CommentTag {
+        string commentId FK,PK "CASCADE on Comment delete"
+        string tagId FK,PK "CASCADE on Tag delete"
+        string userId FK "CASCADE on User delete"
+    }
+
+    Attachment {
+        string id PK "CUID"
+        string userId FK "CASCADE on User delete"
+        string name "Display name"
+        string originalName "Original filename"
+        string fileType "File extension"
+        int fileSize "Size in bytes"
+        string mimeType "MIME type"
+        string description "Nullable"
+        string url "R2 public URL"
+        string thumbnailUrl "Nullable - only for images"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    HotkeyMapping {
+        string id PK "CUID"
+        string userId FK "CASCADE on User delete"
+        string commentId FK "CASCADE on Comment delete"
+        string hotkey "Unique per user - INCOMPLETE: No API routes exist"
+        boolean isActive "Default true"
+    }
+
+    Settings {
+        string id PK "CUID"
+        string userId FK,UK "CASCADE on User delete - one per user"
+        json settings "Free-form JSON object"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Feedback {
+        string id PK "CUID"
+        string userId FK "No cascade behavior defined"
+        string title "Required"
+        string description "Required"
+        datetime createdAt
+    }
