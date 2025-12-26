@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: <Feature Name>
+  description: Feature-scoped API contract
+  version: 0.1.0
+
+paths: {}
+
+components:
+  schemas: {}
+

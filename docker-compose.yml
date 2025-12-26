@@ -3,11 +3,12 @@ version: "3.9"
 services:
   mysql:
     image: mysql:8
-    container_name: gradefast-mysql
+    container_name: quicknote-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: gradefast
+      MYSQL_DATABASE: quicknote
+      MYSQL_ROOT_HOST: '%'
     ports:
       - "3307:3306"
     volumes:
@@ -15,30 +16,31 @@ services:
 
   api:
     build: ./api
-    container_name: gradefast-api
+    container_name: quicknote-api
     ports:
       - "5001:5000"
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://root:root@mysql:3306/gradefast
+      DATABASE_URL: mysql://root:root@mysql:3306/quicknote
       NODE_ENV: development
     volumes:
       - ./api:/app                  # live-edit your code
       - /app/node_modules           # keep deps inside container
       - /app/prisma
+      - ./api/logs:/app/logs
     # install deps on start (into /app/node_modules), then run
     command: sh -c "npm ci || npm install && npm run dev"
 
   webapp:
     build: ./webapp
-    container_name: gradefast-webapp
+    container_name: quicknote-webapp
     ports:
       - "5174:5173"                 # host:container
     depends_on:
       - api
     environment:
-      VITE_API_URL: "http://localhost:5001"
+      VITE_API_URL: "http://localhost:5001/api"
     volumes:
       - ./webapp:/app
       - /app/node_modules

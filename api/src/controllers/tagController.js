@@ -1,0 +1,61 @@
+import logger from "../utils/logger.js";
+import tagService from '../services/tagService.js';
+import returnError from "../middleware/returnError.js";
+import returnSuccess from "../middleware/returnSuccess.js";
+
+class TagController {
+    async fetchTagsByUserId(req, res) {
+        try {
+
+            const {userId} = req.params;
+            if(!userId) return returnError.loggerWarnUserId(res);
+
+            const tags = await tagService.fetchAllTagsByUserId(userId);
+
+            return res.json(tags);
+
+        } catch(err) {
+            return returnError.internalError(res, 'Error fetching tags by userId', err);
+        }
+    }
+
+    async fetchTagByUserId(req, res) {
+        try {
+
+            const {userId, tagId} = req.params;
+
+            if(!userId) return returnError.loggerWarnUserId(res);
+            if(!tagId) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'tagId');
+
+            const tag = await tagService.fetchTagByUserId(userId, tagId);
+
+            return res.json(tag);
+
+        } catch(err) {
+            return returnError.internalError(res, 'Error fetching tag by userId', err);
+        }
+    }
+
+    async createTag(req, res) {
+        try {
+
+            const {userId, commentId, name } = req.body;
+
+            if(!userId) return returnError.internalError(res);
+            if(!commentId) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'commentId');
+            if(!name) return returnError.loggerWarnRequiredAttribute(res, 'tag', 'name');
+
+            const newTag = await tagService.createTag(userId, commentId, name);
+
+            // TODO
+            // This will also need to create a CommentTag row
+
+            return res.status(201).json(newTag);
+
+        } catch(err) {
+            return returnError.internalError(res, 'Error creating tag.', err);
+        }
+    }
+}
+
+export default new TagController();
